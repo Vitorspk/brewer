@@ -1,0 +1,31 @@
+version: '3.8'
+
+# Docker Compose for running integration tests with Testcontainers
+# This is a minimal setup just for the test database
+
+services:
+  # MySQL for Integration Tests
+  mysql-test:
+    image: mysql:8.0
+    container_name: brewer-mysql-test
+    environment:
+      MYSQL_ROOT_PASSWORD: test_root
+      MYSQL_DATABASE: brewer_test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "3307:3306"
+    tmpfs:
+      - /var/lib/mysql  # Use tmpfs for faster tests (data in memory)
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ptest_root"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+networks:
+  test-network:
+    driver: bridge
