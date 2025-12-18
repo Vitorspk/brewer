@@ -318,14 +318,21 @@ Features:
 For security, sensitive data should be provided via environment variables:
 
 ```bash
-# Required
+# Required for Production
+export DATABASE_PASSWORD="your_secure_password"
+
+# Optional (have defaults)
 export DATABASE_URL="jdbc:mysql://localhost:3306/brewer"
 export DATABASE_USERNAME="root"
-export DATABASE_PASSWORD="your_password"
-
-# Optional
 export SERVER_PORT=8080
 ```
+
+**IMPORTANT**:
+- `DATABASE_PASSWORD` is **required in production** (no default in prod profile)
+- Local development uses default passwords:
+  - Default profile: `root`
+  - Dev profile: `dev_password`
+- **Always set `DATABASE_PASSWORD` environment variable before deploying to production**
 
 ### Health Checks
 
