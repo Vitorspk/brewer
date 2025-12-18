@@ -27,6 +27,7 @@ import com.algaworks.brewer.storage.FotoStorageRunnable;
 public class FotosController {
 
 	private static final Logger logger = LoggerFactory.getLogger(FotosController.class);
+	private static final String DEFAULT_IMAGE_PATH = "static/images/logo-gray.png";
 
 	@Autowired
 	private FotoStorage fotoStorage;
@@ -75,12 +76,12 @@ public class FotosController {
 
 	private byte[] getImagemPadrao() {
 		try {
-			ClassPathResource resource = new ClassPathResource("static/images/logo-gray.png");
+			ClassPathResource resource = new ClassPathResource(DEFAULT_IMAGE_PATH);
 			try (InputStream inputStream = resource.getInputStream()) {
 				return inputStream.readAllBytes();
 			}
 		} catch (IOException e) {
-			logger.error("Failed to load default image: {}", e.getMessage());
+			logger.error("Failed to load default image from '{}': {}", DEFAULT_IMAGE_PATH, e.getMessage());
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to load image");
 		}
 	}

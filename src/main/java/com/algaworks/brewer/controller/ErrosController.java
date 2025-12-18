@@ -21,13 +21,16 @@ public class ErrosController implements ErrorController {
 
 			if (statusCode == HttpStatus.NOT_FOUND.value()) {
 				return "404";
-			} else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
-				return "500";
+			} else if (statusCode == HttpStatus.UNAUTHORIZED.value()) {
+				return "redirect:/login";
 			} else if (statusCode == HttpStatus.FORBIDDEN.value()) {
 				return "403";
+			} else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+				return "500";
 			}
 		}
 
+		// Fallback for unhandled error codes
 		return "500";
 	}
 

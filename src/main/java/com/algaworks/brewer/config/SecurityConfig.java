@@ -60,6 +60,8 @@ public class SecurityConfig {
 			.sessionManagement(session -> session
 				.invalidSessionUrl("/login")
 				.sessionFixation().newSession()
+				// Limit to 1 concurrent session per user to enhance security
+				// Users will be logged out from other devices when logging in from a new device
 				.maximumSessions(1)
 			);
 

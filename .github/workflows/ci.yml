@@ -51,11 +51,16 @@ jobs:
 
       - name: Wait for MySQL
         run: |
-          until mysqladmin ping -h 127.0.0.1 -P 3307 --silent; do
-            echo 'Waiting for MySQL...'
+          for i in {1..30}; do
+            if mysql -h 127.0.0.1 -P 3307 -u test -ptest -e "SELECT 1" 2>/dev/null; then
+              echo "MySQL is ready!"
+              exit 0
+            fi
+            echo "Waiting for MySQL..."
             sleep 2
           done
-          echo 'MySQL is ready!'
+          echo "MySQL failed to start"
+          exit 1
 
       - name: Run tests
         run: mvn clean test -B
