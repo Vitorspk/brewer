@@ -191,7 +191,8 @@ newman run Brewer-API.postman_collection.json \
 |----------|-------|-------------|
 | `base_url` | `http://localhost:8080` | Application base URL |
 | `admin_email` | `admin@brewer.com` | Admin login email |
-| `admin_password` | `admin` | Admin password |
+| `admin_password` | `admin` | Admin password (secret) |
+| `test_user_password` | `TestPassword123!` | Password for test user creation (secret) |
 | `sessionCookie` | *(auto-set)* | Session cookie from login |
 | `last_style_id` | *(auto-set)* | Last created style ID |
 
@@ -201,7 +202,8 @@ newman run Brewer-API.postman_collection.json \
 |----------|-------|-------------|
 | `base_url` | `https://your-production-url.com` | Production URL |
 | `admin_email` | *(configure)* | Production admin email |
-| `admin_password` | *(configure)* | Production admin password |
+| `admin_password` | *(configure)* | Production admin password (secret) |
+| `test_user_password` | *(configure)* | Password for test user creation (secret) |
 | `sessionCookie` | *(auto-set)* | Session cookie from login |
 | `last_style_id` | *(auto-set)* | Last created style ID |
 

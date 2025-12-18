@@ -614,12 +614,12 @@
 								},
 								{
 									"key": "senha",
-									"value": "password123",
+									"value": "{{test_user_password}}",
 									"type": "text"
 								},
 								{
 									"key": "confirmacaoSenha",
-									"value": "password123",
+									"value": "{{test_user_password}}",
 									"type": "text"
 								},
 								{
