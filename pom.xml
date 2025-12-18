@@ -189,6 +189,24 @@
 	</dependencies>
 
 	<build>
+		<!-- Enable resource filtering for Maven property substitution in application.properties -->
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+
 		<plugins>
 			<!-- Spring Boot Maven Plugin -->
 			<plugin>

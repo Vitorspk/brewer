@@ -2,9 +2,14 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ master, feature/** ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
+
+# Cancel in-progress runs when a new commit is pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: docker.io
@@ -17,7 +22,7 @@ jobs:
 
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0.39
         env:
           MYSQL_ROOT_PASSWORD: test
           MYSQL_DATABASE: brewer_test
