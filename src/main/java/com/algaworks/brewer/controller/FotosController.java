@@ -46,11 +46,8 @@ public class FotosController {
 		validateFileName(nome);
 		try {
 			return fotoStorage.recuperarFotoTemporaria(nome);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.warn("Failed to load temporary photo '{}': {}", nome, e.getMessage());
-			return getImagemPadrao();
-		} catch (RuntimeException e) {
-			logger.error("Unexpected error loading temporary photo '{}': {}", nome, e.getMessage(), e);
 			return getImagemPadrao();
 		}
 	}
@@ -60,11 +57,8 @@ public class FotosController {
 		validateFileName(nome);
 		try {
 			return fotoStorage.recuperar(nome);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.warn("Failed to load photo '{}': {}", nome, e.getMessage());
-			return getImagemPadrao();
-		} catch (RuntimeException e) {
-			logger.error("Unexpected error loading photo '{}': {}", nome, e.getMessage(), e);
 			return getImagemPadrao();
 		}
 	}
