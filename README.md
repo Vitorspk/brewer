@@ -334,6 +334,17 @@ export SERVER_PORT=8080
   - Dev profile: `dev_password`
 - **Always set `DATABASE_PASSWORD` environment variable before deploying to production**
 
+**🔐 SECURITY WARNING - Password Rotation Required**:
+- ⚠️ **Previous versions of this codebase contained hardcoded database passwords in git history**
+- 🔴 **ACTION REQUIRED**: If you previously used hardcoded passwords (e.g., `x5r2i6e3`), rotate them immediately
+- ✅ **Current version**: All passwords externalized to environment variables
+- 📋 **Best Practices**:
+  - Never commit passwords or secrets to git
+  - Use `.env` files for local development (add to `.gitignore`)
+  - Use secret management tools for production (e.g., AWS Secrets Manager, HashiCorp Vault, Kubernetes Secrets)
+  - Consider enabling GitHub Secret Scanning for this repository
+  - Review git history using: `git log -p -- '*.properties' | grep -i password`
+
 ### Health Checks
 
 The health endpoint provides detailed information about:
