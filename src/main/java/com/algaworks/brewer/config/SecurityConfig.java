@@ -57,6 +57,7 @@ public class SecurityConfig {
 			)
 			.sessionManagement(session -> session
 				.invalidSessionUrl("/login")
+				.sessionFixation().newSession()
 				.maximumSessions(1)
 			);
 

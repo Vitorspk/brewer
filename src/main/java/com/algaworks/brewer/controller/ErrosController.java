@@ -20,7 +20,7 @@ public class ErrosController implements ErrorController {
 			int statusCode = Integer.parseInt(status.toString());
 
 			if (statusCode == HttpStatus.NOT_FOUND.value()) {
-				return "redirect:/login";
+				return "404";
 			} else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
 				return "500";
 			} else if (statusCode == HttpStatus.FORBIDDEN.value()) {
@@ -28,7 +28,7 @@ public class ErrosController implements ErrorController {
 			}
 		}
 
-		return "redirect:/login";
+		return "500";
 	}
 
 	@GetMapping("/404")

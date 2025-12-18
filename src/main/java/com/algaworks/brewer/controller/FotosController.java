@@ -3,8 +3,11 @@ package com.algaworks.brewer.controller;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.algaworks.brewer.dto.FotoDTO;
 import com.algaworks.brewer.storage.FotoStorage;
@@ -21,6 +25,8 @@ import com.algaworks.brewer.storage.FotoStorageRunnable;
 @RestController
 @RequestMapping("/fotos")
 public class FotosController {
+
+	private static final Logger logger = LoggerFactory.getLogger(FotosController.class);
 
 	@Autowired
 	private FotoStorage fotoStorage;
@@ -37,29 +43,51 @@ public class FotosController {
 
 	@GetMapping("/temp/{nome:.*}")
 	public byte[] recuperarFotoTemporaria(@PathVariable String nome) {
+		validateFileName(nome);
 		try {
 			return fotoStorage.recuperarFotoTemporaria(nome);
-		} catch (Exception e) {
+		} catch (IOException e) {
+			logger.warn("Failed to load temporary photo '{}': {}", nome, e.getMessage());
+			return getImagemPadrao();
+		} catch (RuntimeException e) {
+			logger.error("Unexpected error loading temporary photo '{}': {}", nome, e.getMessage(), e);
 			return getImagemPadrao();
 		}
 	}
 
 	@GetMapping("/{nome:.*}")
 	public byte[] recuperar(@PathVariable String nome) {
+		validateFileName(nome);
 		try {
 			return fotoStorage.recuperar(nome);
-		} catch (Exception e) {
+		} catch (IOException e) {
+			logger.warn("Failed to load photo '{}': {}", nome, e.getMessage());
 			return getImagemPadrao();
+		} catch (RuntimeException e) {
+			logger.error("Unexpected error loading photo '{}': {}", nome, e.getMessage(), e);
+			return getImagemPadrao();
+		}
+	}
+
+	private void validateFileName(String nome) {
+		if (nome == null || nome.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File name cannot be empty");
+		}
+		if (nome.contains("..") || nome.contains("/") || nome.contains("\\")) {
+			logger.warn("Attempted path traversal attack detected: {}", nome);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file name");
 		}
 	}
 
 	private byte[] getImagemPadrao() {
 		try {
 			ClassPathResource resource = new ClassPathResource("static/images/logo-gray.png");
-			InputStream inputStream = resource.getInputStream();
-			return inputStream.readAllBytes();
+			try (InputStream inputStream = resource.getInputStream()) {
+				return inputStream.readAllBytes();
+			}
 		} catch (IOException e) {
-			return new byte[0];
+			logger.error("Failed to load default image: {}", e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to load image");
 		}
 	}
 

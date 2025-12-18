@@ -33,9 +33,4 @@ public class DashboardController {
 		return mv;
 	}
 
-	@GetMapping("/dashboard.html")
-	public ModelAndView dashboardHtml() {
-		return dashboard();
-	}
-
 }
