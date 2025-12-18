@@ -65,3 +65,8 @@ spring-boot-*.log
 # Application specific
 /logs/
 /temp/
+
+# Postman - Exclude environment files with credentials
+# Use *.example.json templates instead
+postman/*environment.json
+!postman/*.example.json

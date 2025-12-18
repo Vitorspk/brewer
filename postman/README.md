@@ -5,8 +5,39 @@ Complete Postman test collection for the Brewer Brewery Management System API.
 ## 📋 Contents
 
 - **Brewer-API.postman_collection.json** - Complete API collection with 40+ endpoints
-- **Development.postman_environment.json** - Local development environment
+- **Development.postman_environment.example.json** - Development environment template
 - **Production.postman_environment.json** - Production environment template
+
+## ⚙️ Prerequisites
+
+Before using the Postman collection, ensure you have:
+
+### Required Software
+- **Postman Desktop App** (v10.0.0 or later) or **Postman CLI (Newman)**
+  - Download: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
+  - Newman CLI: `npm install -g newman`
+
+### Application Setup
+- **Brewer application running** on `http://localhost:8080` (or configured URL)
+- **MySQL database** initialized with required schema and seed data
+- **Admin account** created with appropriate credentials
+
+### Environment Configuration
+1. Copy `Development.postman_environment.example.json` to `Development.postman_environment.json`
+2. Configure credentials in your local copy:
+   ```json
+   {
+     "key": "admin_password",
+     "value": "your_admin_password",
+     "type": "secret"
+   },
+   {
+     "key": "test_user_password",
+     "value": "your_test_password",
+     "type": "secret"
+   }
+   ```
+3. **Never commit** `Development.postman_environment.json` or `Production.postman_environment.json` with real credentials
 
 ## 🚀 Quick Start
 
@@ -99,8 +130,8 @@ The Brewer API uses Spring Security with session-based authentication.
    POST {{base_url}}/login
    Content-Type: application/x-www-form-urlencoded
 
-   username=admin@brewer.com
-   password=admin
+   username={{admin_email}}
+   password={{admin_password}}
    ```
 
 2. **Extract Session Cookie**:
@@ -111,14 +142,13 @@ The Brewer API uses Spring Security with session-based authentication.
    - All subsequent requests automatically include the session cookie
    - Global pre-request script handles cookie injection
 
-#### Default Credentials
+#### Credentials Configuration
 
-**Development Environment**:
-- Email: `admin@brewer.com`
-- Password: `admin`
+Configure your admin credentials in the environment file:
+- **Email**: Set in `admin_email` environment variable
+- **Password**: Set in `admin_password` environment variable (secure type)
 
-**Production Environment**:
-- Configure your own credentials in the environment variables
+Refer to the **Prerequisites** section for environment setup instructions.
 
 ### Authorization
 
@@ -191,8 +221,8 @@ newman run Brewer-API.postman_collection.json \
 |----------|-------|-------------|
 | `base_url` | `http://localhost:8080` | Application base URL |
 | `admin_email` | `admin@brewer.com` | Admin login email |
-| `admin_password` | `admin` | Admin password (secret) |
-| `test_user_password` | `TestPassword123!` | Password for test user creation (secret) |
+| `admin_password` | *(configure)* | Admin password (secret) |
+| `test_user_password` | *(configure)* | Password for test user creation (secret) |
 | `sessionCookie` | *(auto-set)* | Session cookie from login |
 | `last_style_id` | *(auto-set)* | Last created style ID |
 
