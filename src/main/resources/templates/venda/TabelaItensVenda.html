@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+
+<div class="bw-tabela-cervejas  js-tabela-item" th:fragment="tabela" th:if="${!itens.empty}" th:data-valor-total="${valorTotalItens}">
+	<div class="bw-tabela-item" th:each="item : ${itens}">
+		<div class="bw-tabela-item__coluna  bw-tabela-item__coluna--foto">
+			<img th:src="@{/fotos/thumbnail.{foto}(foto=${item.cerveja.fotoOuMock})}" class="img-responsive"/>
+		</div>
+
+		<div class="bw-tabela-item__coluna  bw-tabela-item__coluna--detalhes">
+			<span class="bw-tabela-cerveja-nome" th:text="${item.cerveja.nome}">Negra Modelo Long Neck 355ml</span>
+			<span class="label  label-default" th:text="${item.cerveja.sku}">AA1112</span>
+			<span class="bw-tabela-cerveja-origem" th:text="${item.cerveja.origem.descricao}">Importada</span>
+		</div>
+
+		<div class="bw-tabela-item__coluna  bw-tabela-item__coluna--valores">
+			<div class="bw-tabela-cerveja-valor-pequeno">
+				<input type="text" maxlength="3" readonly="readonly"
+					th:id="|cerveja-${item.cerveja.codigo}|"
+					th:data-codigo-cerveja="${item.cerveja.codigo}"
+					class="bw-tabela-cerveja-campo-quantidade  js-tabela-cerveja-quantidade-item"
+					th:value="${item.quantidade}"/>
+				<span th:text="|x R$${item.valorUnitario}|">x R$8,90</span>
+			</div>
+			<div class="bw-tabela-cerveja-valor-grande" th:text="|R$${item.valorTotal}|">R$8,90</div>
+		</div>
+
+		<div class="bw-tabela-item__coluna  bw-tabela-item__coluna--exclusao">
+			<button type="button" class="btn  btn-link  js-exclusao-item-btn"
+				title="Excluir item"
+				th:data-codigo-cerveja="${item.cerveja.codigo}">
+				<i class="glyphicon glyphicon-remove"></i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="bw-tabela-cervejas__vazio" th:if="${itens.empty}">
+	<i class="glyphicon  glyphicon-shopping-cart"></i>
+	<span>Você ainda não adicionou nenhuma cerveja.</span>
+</div>
+
+</html>
