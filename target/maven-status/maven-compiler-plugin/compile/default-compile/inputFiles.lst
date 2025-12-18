@@ -59,6 +59,7 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/validation/validator/AtributoConfirmacaoValidator.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Endereco.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/helper/estilo/EstilosImpl.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/controller/DashboardController.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/thymeleaf/processor/ClassForErrorAttributeTagProcessor.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/config/SecurityConfig.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/helper/cliente/ClientesImpl.java
@@ -86,3 +87,4 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/controller/converter/EstiloConverter.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/controller/SegurancaController.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/validation/ClienteGroupSequenceProvider.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/config/StorageConfig.java

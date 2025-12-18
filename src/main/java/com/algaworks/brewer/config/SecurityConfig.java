@@ -34,6 +34,8 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.authorizeHttpRequests(authorize -> authorize
+				// Public endpoints - no authentication required
+				.requestMatchers("/", "/login", "/error", "/404", "/500", "/403").permitAll()
 				// Actuator endpoints - public health check, restricted management endpoints
 				.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
 				.requestMatchers("/actuator/info").permitAll()
@@ -45,16 +47,22 @@ public class SecurityConfig {
 			)
 			.formLogin(form -> form
 				.loginPage("/login")
+				.defaultSuccessUrl("/cervejas", false)
 				.permitAll()
 			)
 			.logout(logout -> logout
 				.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+				.logoutSuccessUrl("/login")
 			)
 			.exceptionHandling(exception -> exception
 				.accessDeniedPage("/403")
 			)
 			.sessionManagement(session -> session
 				.invalidSessionUrl("/login")
+				.sessionFixation().newSession()
+				// Limit to 1 concurrent session per user to enhance security
+				// Users will be logged out from other devices when logging in from a new device
+				.maximumSessions(1)
 			);
 
 		return http.build();

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/LayoutPadrao}">
+
+<head>
+	<title>Dashboard</title>
+</head>
+
+<body>
+<section layout:fragment="conteudo">
+	<div class="page-header">
+		<div class="container-fluid">
+			<h1>Dashboard</h1>
+		</div>
+	</div>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-6 col-md-4">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<i class="glyphicon glyphicon-glass"></i> Cervejas
+						</h3>
+					</div>
+					<div class="panel-body">
+						<h2 class="text-center" th:text="${totalCervejas}">0</h2>
+						<p class="text-center">Total de cervejas cadastradas</p>
+					</div>
+					<div class="panel-footer">
+						<a th:href="@{/cervejas}" class="btn btn-block btn-default">
+							Ver cervejas <i class="glyphicon glyphicon-chevron-right"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-6 col-md-4">
+				<div class="panel panel-success">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<i class="glyphicon glyphicon-user"></i> Clientes
+						</h3>
+					</div>
+					<div class="panel-body">
+						<h2 class="text-center" th:text="${totalClientes}">0</h2>
+						<p class="text-center">Total de clientes cadastrados</p>
+					</div>
+					<div class="panel-footer">
+						<a th:href="@{/clientes}" class="btn btn-block btn-default">
+							Ver clientes <i class="glyphicon glyphicon-chevron-right"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-6 col-md-4">
+				<div class="panel panel-info">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<i class="glyphicon glyphicon-tag"></i> Estilos
+						</h3>
+					</div>
+					<div class="panel-body">
+						<h2 class="text-center" th:text="${totalEstilos}">0</h2>
+						<p class="text-center">Total de estilos cadastrados</p>
+					</div>
+					<div class="panel-footer">
+						<a th:href="@{/estilos}" class="btn btn-block btn-default">
+							Ver estilos <i class="glyphicon glyphicon-chevron-right"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<i class="glyphicon glyphicon-info-sign"></i> Bem-vindo ao Brewer
+						</h3>
+					</div>
+					<div class="panel-body">
+						<p>Sistema de gerenciamento de cervejaria.</p>
+						<p>Utilize o menu lateral para navegar entre as funcionalidades.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+</body>
+</html>
