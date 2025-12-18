@@ -124,12 +124,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200 or 302 (redirect)\", function () {",
-									"    pm.expect([200, 302]).to.include(pm.response.code);",
+									"pm.test(\"Status code is 302 (redirect on success)\", function () {",
+									"    pm.response.to.have.status(302);",
 									"});",
 									"",
-									"pm.test(\"Success message present\", function () {",
-									"    pm.expect(pm.response.text()).to.include(\"sucesso\");",
+									"pm.test(\"Redirects to beer form\", function () {",
+									"    if (pm.response.code === 302) {",
+									"        const location = pm.response.headers.get('Location');",
+									"        pm.expect(location).to.include('/cervejas/novo');",
+									"    }",
 									"});"
 								],
 								"type": "text/javascript"
