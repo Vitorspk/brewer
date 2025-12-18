@@ -61,6 +61,7 @@ spring-boot-*.log
 *.bak
 *.swp
 *~.nib
+cookies.txt
 
 # Application specific
 /logs/
