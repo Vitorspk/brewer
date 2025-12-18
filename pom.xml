@@ -66,6 +66,12 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
+		<!-- Spring Boot Actuator - Health checks and metrics -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
 		<!-- Thymeleaf + Spring Security Integration -->
 		<!-- FASE 4: Atualizado para springsecurity6 (Spring Boot 3) -->
 		<dependency>
