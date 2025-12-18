@@ -5,8 +5,39 @@ Complete Postman test collection for the Brewer Brewery Management System API.
 ## 📋 Contents
 
 - **Brewer-API.postman_collection.json** - Complete API collection with 40+ endpoints
-- **Development.postman_environment.json** - Local development environment
+- **Development.postman_environment.example.json** - Development environment template
 - **Production.postman_environment.json** - Production environment template
+
+## ⚙️ Prerequisites
+
+Before using the Postman collection, ensure you have:
+
+### Required Software
+- **Postman Desktop App** (v10.0.0 or later) or **Postman CLI (Newman)**
+  - Download: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)
+  - Newman CLI: `npm install -g newman`
+
+### Application Setup
+- **Brewer application running** on `http://localhost:8080` (or configured URL)
+- **MySQL database** initialized with required schema and seed data
+- **Admin account** created (default: `admin@brewer.com` / `admin`)
+
+### Environment Configuration
+1. Copy `Development.postman_environment.example.json` to `Development.postman_environment.json`
+2. Configure credentials in your local copy:
+   ```json
+   {
+     "key": "admin_password",
+     "value": "your_admin_password",
+     "type": "secret"
+   },
+   {
+     "key": "test_user_password",
+     "value": "your_test_password",
+     "type": "secret"
+   }
+   ```
+3. **Never commit** `Development.postman_environment.json` or `Production.postman_environment.json` with real credentials
 
 ## 🚀 Quick Start
 

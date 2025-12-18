@@ -393,9 +393,9 @@
 								},
 								{
 									"key": "cpfOuCnpj",
-									"value": "12345678901",
+									"value": "11144477735",
 									"type": "text",
-									"description": "Valid CPF format (11 digits)"
+									"description": "Valid CPF (11 digits with valid check digits)"
 								},
 								{
 									"key": "email",
@@ -443,9 +443,9 @@
 								},
 								{
 									"key": "cpfOuCnpj",
-									"value": "12345678901234",
+									"value": "11222333000181",
 									"type": "text",
-									"description": "Valid CNPJ format (14 digits)"
+									"description": "Valid CNPJ (14 digits with valid check digits)"
 								},
 								{
 									"key": "email",
