@@ -34,6 +34,11 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.authorizeHttpRequests(authorize -> authorize
+				// Actuator endpoints - public health check, restricted management endpoints
+				.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+				.requestMatchers("/actuator/info").permitAll()
+				.requestMatchers("/actuator/**").hasRole("ADMIN")
+				// Application endpoints
 				.requestMatchers("/cidades/nova").hasRole("CADASTRAR_CIDADE")
 				.requestMatchers("/usuarios/**").hasRole("CADASTRAR_USUARIO")
 				.anyRequest().authenticated()

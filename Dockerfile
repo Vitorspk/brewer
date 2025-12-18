@@ -18,6 +18,9 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+# Install curl for healthcheck (Alpine doesn't include it by default)
+RUN apk add --no-cache curl
+
 # Create non-root user for security
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
@@ -28,9 +31,9 @@ COPY --from=build /app/target/*.jar app.jar
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check using curl (more reliable than wget in Alpine)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Run application
 ENTRYPOINT ["java", \

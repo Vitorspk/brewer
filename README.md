@@ -15,6 +15,7 @@ A comprehensive brewery management system built with modern Java technologies. T
 - [Running the Application](#running-the-application)
 - [Testing](#testing)
 - [Docker Support](#docker-support)
+- [Monitoring & Observability](#monitoring--observability)
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
 - [Migration History](#migration-history)
@@ -242,6 +243,114 @@ docker-compose -f docker-compose.test.yml down
 - `docker-compose.yml` - Production-like environment
 - `docker-compose.test.yml` - Test database (port 3307)
 - `Dockerfile` - Application containerization (if needed)
+
+## 📊 Monitoring & Observability
+
+### Spring Boot Actuator Endpoints
+
+The application includes Spring Boot Actuator for monitoring and management:
+
+#### Public Endpoints (No Authentication Required)
+- `GET /actuator/health` - Application health status
+  ```bash
+  curl http://localhost:8080/actuator/health
+  ```
+  Response: `{"status":"UP"}` or `{"status":"DOWN"}`
+
+- `GET /actuator/info` - Application information
+  ```bash
+  curl http://localhost:8080/actuator/info
+  ```
+  Returns: Application name, version, Java version, description
+
+#### Secured Endpoints (Requires ADMIN role)
+- `GET /actuator/metrics` - Available metrics list
+- `GET /actuator/metrics/{name}` - Specific metric details
+  ```bash
+  # Example: JVM memory metrics
+  curl -u admin:password http://localhost:8080/actuator/metrics/jvm.memory.used
+
+  # Example: HTTP server requests
+  curl -u admin:password http://localhost:8080/actuator/metrics/http.server.requests
+  ```
+
+### Environment Profiles
+
+The application supports different profiles for different environments:
+
+#### Development Profile (`dev`)
+```bash
+# Run with dev profile
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Or set environment variable
+export SPRING_PROFILES_ACTIVE=dev
+```
+Features:
+- Verbose logging (DEBUG level)
+- SQL logging enabled
+- All Actuator endpoints exposed
+- Hot reload enabled
+- Thymeleaf cache disabled
+
+#### Production Profile (`prod`)
+```bash
+# Run with prod profile
+export SPRING_PROFILES_ACTIVE=prod
+export DATABASE_PASSWORD=your_secure_password
+mvn spring-boot:run
+```
+Features:
+- Minimal logging (WARN level)
+- SQL logging disabled
+- Only safe Actuator endpoints exposed (health, info, metrics)
+- Environment variables for sensitive data
+- HTTP compression enabled
+- Secure session cookies
+
+#### Test Profile (`test`)
+- Automatically activated during tests
+- Actuator disabled
+- In-memory or test database configuration
+
+### Environment Variables
+
+For security, sensitive data should be provided via environment variables:
+
+```bash
+# Required for Production
+export DATABASE_PASSWORD="your_secure_password"
+
+# Optional (have defaults)
+export DATABASE_URL="jdbc:mysql://localhost:3306/brewer"
+export DATABASE_USERNAME="root"
+export SERVER_PORT=8080
+```
+
+**IMPORTANT**:
+- `DATABASE_PASSWORD` is **required in production** (no default in prod profile)
+- Local development uses default passwords:
+  - Default profile: `root`
+  - Dev profile: `dev_password`
+- **Always set `DATABASE_PASSWORD` environment variable before deploying to production**
+
+**🔐 SECURITY WARNING - Password Rotation Required**:
+- ⚠️ **Previous versions of this codebase contained hardcoded database passwords in git history**
+- 🔴 **ACTION REQUIRED**: If you previously used hardcoded passwords (e.g., `x5r2i6e3`), rotate them immediately
+- ✅ **Current version**: All passwords externalized to environment variables
+- 📋 **Best Practices**:
+  - Never commit passwords or secrets to git
+  - Use `.env` files for local development (add to `.gitignore`)
+  - Use secret management tools for production (e.g., AWS Secrets Manager, HashiCorp Vault, Kubernetes Secrets)
+  - Consider enabling GitHub Secret Scanning for this repository
+  - Review git history using: `git log -p -- '*.properties' | grep -i password`
+
+### Health Checks
+
+The health endpoint provides detailed information about:
+- Database connectivity
+- Disk space
+- Application status
 
 ## 📁 Project Structure
 
