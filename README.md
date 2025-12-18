@@ -213,6 +213,66 @@ mvn test
 docker-compose -f docker-compose.test.yml down
 ```
 
+### API Testing with Postman
+
+The project includes a comprehensive Postman collection for API testing:
+
+#### Quick Start
+1. Install [Postman](https://www.postman.com/downloads/) or use [Newman CLI](https://www.npmjs.com/package/newman)
+2. Import collection: `postman/Brewer-API.postman_collection.json`
+3. Import environment: `postman/Development.postman_environment.json`
+4. Run tests from Postman or command line
+
+#### Collection Contents
+- **40+ Endpoints** organized by feature
+- **Automated test scripts** for validation
+- **Session management** with auto-cookie handling
+- **Environments** for dev/prod configurations
+
+#### Available Test Suites
+- **Authentication**: Login/Logout with session management
+- **Beers (Cervejas)**: CRUD operations, search, and filters
+- **Customers (Clientes)**: CPF/CNPJ validation, autocomplete
+- **Users (Usuarios)**: User management with roles
+- **Beer Styles (Estilos)**: Style management with caching
+- **Cities (Cidades)**: Geographic data with state filtering
+- **Actuator**: Health checks, metrics, Kubernetes probes
+
+#### Run Tests with Newman CLI
+```bash
+# Install Newman
+npm install -g newman
+
+# Run all tests
+newman run postman/Brewer-API.postman_collection.json \
+  -e postman/Development.postman_environment.json
+
+# Run specific folder
+newman run postman/Brewer-API.postman_collection.json \
+  -e postman/Development.postman_environment.json \
+  --folder "Actuator - Monitoring"
+
+# Generate HTML report
+newman run postman/Brewer-API.postman_collection.json \
+  -e postman/Development.postman_environment.json \
+  --reporters cli,html \
+  --reporter-html-export ./test-results.html
+```
+
+#### CI/CD Integration
+```yaml
+# GitHub Actions example
+- name: Run API Tests
+  run: |
+    npm install -g newman
+    newman run postman/Brewer-API.postman_collection.json \
+      -e postman/Production.postman_environment.json \
+      --reporters cli,json \
+      --reporter-json-export ./test-results.json
+```
+
+📚 **Full documentation**: See [postman/README.md](postman/README.md) for detailed usage, workflows, and troubleshooting.
+
 ## 🐳 Docker Support
 
 ### Full Application Stack

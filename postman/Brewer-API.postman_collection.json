@@ -1,0 +1,1316 @@
+{
+	"info": {
+		"_postman_id": "brewer-api-collection",
+		"name": "Brewer API - Complete Test Suite",
+		"description": "Complete API test collection for Brewer Brewery Management System.\n\nIncludes:\n- Authentication & Session Management\n- CRUD operations for Beers, Customers, Users, Cities, Styles\n- Search and Filter operations\n- Spring Boot Actuator endpoints\n- Automated test scripts\n\nVersion: 1.0.0\nAuthor: Brewer Team",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "noauth"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 302 (redirect)\", function () {",
+									"    pm.expect([200, 302]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Session cookie is set\", function () {",
+									"    pm.expect(pm.cookies.has('JSESSIONID')).to.be.true;",
+									"});",
+									"",
+									"// Save session cookie for subsequent requests",
+									"if (pm.cookies.has('JSESSIONID')) {",
+									"    pm.environment.set('sessionCookie', pm.cookies.get('JSESSIONID'));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{{admin_email}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{admin_password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/login",
+							"host": ["{{base_url}}"],
+							"path": ["login"]
+						},
+						"description": "Authenticate user and obtain session cookie"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 302\", function () {",
+									"    pm.expect([200, 302]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.environment.unset('sessionCookie');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/logout",
+							"host": ["{{base_url}}"],
+							"path": ["logout"]
+						},
+						"description": "Logout and invalidate session"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication and session management endpoints"
+		},
+		{
+			"name": "Beers (Cervejas)",
+			"item": [
+				{
+					"name": "Create Beer - Form View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/cervejas/novo",
+							"host": ["{{base_url}}"],
+							"path": ["cervejas", "novo"]
+						},
+						"description": "Get new beer registration form"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Beer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 302 (redirect on success)\", function () {",
+									"    pm.response.to.have.status(302);",
+									"});",
+									"",
+									"pm.test(\"Redirects to beer form\", function () {",
+									"    if (pm.response.code === 302) {",
+									"        const location = pm.response.headers.get('Location');",
+									"        pm.expect(location).to.include('/cervejas/novo');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "sku",
+									"value": "TEST{{$timestamp}}",
+									"type": "text",
+									"description": "Unique SKU"
+								},
+								{
+									"key": "nome",
+									"value": "Beer Test {{$timestamp}}",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Test beer description",
+									"type": "text"
+								},
+								{
+									"key": "estilo.codigo",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "sabor",
+									"value": "SUAVE",
+									"type": "text"
+								},
+								{
+									"key": "origem",
+									"value": "NACIONAL",
+									"type": "text"
+								},
+								{
+									"key": "valor",
+									"value": "10.50",
+									"type": "text"
+								},
+								{
+									"key": "comissao",
+									"value": "5.00",
+									"type": "text"
+								},
+								{
+									"key": "quantidadeEstoque",
+									"value": "100",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/cervejas/novo",
+							"host": ["{{base_url}}"],
+							"path": ["cervejas", "novo"]
+						},
+						"description": "Create a new beer"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Beers - Paginated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains beer list\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"cerveja\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/cervejas?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["cervejas"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sku",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by SKU"
+								},
+								{
+									"key": "nome",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by name"
+								},
+								{
+									"key": "estilo",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by style ID"
+								},
+								{
+									"key": "sabor",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by flavor (SUAVE/FORTE)"
+								},
+								{
+									"key": "origem",
+									"value": "",
+									"disabled": true,
+									"description": "Filter by origin (NACIONAL/INTERNACIONAL)"
+								}
+							]
+						},
+						"description": "Search beers with pagination and filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Beers - JSON (Autocomplete)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each beer has required fields\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('codigo');",
+									"        pm.expect(jsonData[0]).to.have.property('sku');",
+									"        pm.expect(jsonData[0]).to.have.property('nome');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/cervejas?skuOuNome=",
+							"host": ["{{base_url}}"],
+							"path": ["cervejas"],
+							"query": [
+								{
+									"key": "skuOuNome",
+									"value": "",
+									"description": "Search by SKU or name"
+								}
+							]
+						},
+						"description": "Search beers by SKU or name (returns JSON for autocomplete)"
+					},
+					"response": []
+				}
+			],
+			"description": "Beer (Cerveja) management endpoints"
+		},
+		{
+			"name": "Customers (Clientes)",
+			"item": [
+				{
+					"name": "Create Customer - Form View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clientes/novo",
+							"host": ["{{base_url}}"],
+							"path": ["clientes", "novo"]
+						},
+						"description": "Get new customer registration form"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer (Individual - CPF)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 302\", function () {",
+									"    pm.expect([200, 302]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "Customer Test {{$timestamp}}",
+									"type": "text"
+								},
+								{
+									"key": "tipoPessoa",
+									"value": "FISICA",
+									"type": "text"
+								},
+								{
+									"key": "cpfOuCnpj",
+									"value": "12345678901",
+									"type": "text",
+									"description": "Valid CPF format (11 digits)"
+								},
+								{
+									"key": "email",
+									"value": "customer{{$timestamp}}@test.com",
+									"type": "text"
+								},
+								{
+									"key": "telefone",
+									"value": "(11) 98765-4321",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/clientes/novo",
+							"host": ["{{base_url}}"],
+							"path": ["clientes", "novo"]
+						},
+						"description": "Create individual customer with CPF"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Customer (Company - CNPJ)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "Company Test {{$timestamp}}",
+									"type": "text"
+								},
+								{
+									"key": "tipoPessoa",
+									"value": "JURIDICA",
+									"type": "text"
+								},
+								{
+									"key": "cpfOuCnpj",
+									"value": "12345678901234",
+									"type": "text",
+									"description": "Valid CNPJ format (14 digits)"
+								},
+								{
+									"key": "email",
+									"value": "company{{$timestamp}}@test.com",
+									"type": "text"
+								},
+								{
+									"key": "telefone",
+									"value": "(11) 3456-7890",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/clientes/novo",
+							"host": ["{{base_url}}"],
+							"path": ["clientes", "novo"]
+						},
+						"description": "Create company customer with CNPJ"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Customers - Paginated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clientes?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["clientes"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "nome",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "cpfOuCnpj",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Search customers with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Customers - JSON (Autocomplete)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/clientes?nome=",
+							"host": ["{{base_url}}"],
+							"path": ["clientes"],
+							"query": [
+								{
+									"key": "nome",
+									"value": "",
+									"description": "Search by name"
+								}
+							]
+						},
+						"description": "Search customers by name (JSON response)"
+					},
+					"response": []
+				}
+			],
+			"description": "Customer (Cliente) management endpoints"
+		},
+		{
+			"name": "Users (Usuarios)",
+			"item": [
+				{
+					"name": "Create User - Form View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios/novo",
+							"host": ["{{base_url}}"],
+							"path": ["usuarios", "novo"]
+						},
+						"description": "Get new user registration form"
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 302\", function () {",
+									"    pm.expect([200, 302]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "Test User {{$timestamp}}",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "testuser{{$timestamp}}@brewer.com",
+									"type": "text"
+								},
+								{
+									"key": "senha",
+									"value": "{{test_user_password}}",
+									"type": "text"
+								},
+								{
+									"key": "confirmacaoSenha",
+									"value": "{{test_user_password}}",
+									"type": "text"
+								},
+								{
+									"key": "ativo",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "grupos",
+									"value": "1",
+									"type": "text",
+									"description": "Group ID (role)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/usuarios/novo",
+							"host": ["{{base_url}}"],
+							"path": ["usuarios", "novo"]
+						},
+						"description": "Create a new user"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Users - Paginated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["usuarios"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "nome",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Search users with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios/status?codigos=1&status=ATIVAR",
+							"host": ["{{base_url}}"],
+							"path": ["usuarios", "status"],
+							"query": [
+								{
+									"key": "codigos",
+									"value": "1",
+									"description": "User ID"
+								},
+								{
+									"key": "status",
+									"value": "ATIVAR",
+									"description": "ATIVAR or DESATIVAR"
+								}
+							]
+						},
+						"description": "Activate or deactivate user"
+					},
+					"response": []
+				}
+			],
+			"description": "User (Usuario) management endpoints - Requires ADMIN role"
+		},
+		{
+			"name": "Beer Styles (Estilos)",
+			"item": [
+				{
+					"name": "Create Style - Form View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/estilos/novo",
+							"host": ["{{base_url}}"],
+							"path": ["estilos", "novo"]
+						},
+						"description": "Get new style registration form"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Style (Form)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "Style Test {{$timestamp}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/estilos/novo",
+							"host": ["{{base_url}}"],
+							"path": ["estilos", "novo"]
+						},
+						"description": "Create style via form submission"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Style (JSON - Modal)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON with style data\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('codigo');",
+									"    pm.expect(jsonData).to.have.property('nome');",
+									"});",
+									"",
+									"// Save created style ID for later use",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('last_style_id', jsonData.codigo);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Style JSON {{$timestamp}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/estilos",
+							"host": ["{{base_url}}"],
+							"path": ["estilos"]
+						},
+						"description": "Create style via JSON (used in modal)"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Styles - Paginated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/estilos?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["estilos"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "nome",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Search styles with pagination"
+					},
+					"response": []
+				}
+			],
+			"description": "Beer Style (Estilo) management endpoints"
+		},
+		{
+			"name": "Cities (Cidades)",
+			"item": [
+				{
+					"name": "Create City - Form View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/cidades/nova",
+							"host": ["{{base_url}}"],
+							"path": ["cidades", "nova"]
+						},
+						"description": "Get new city registration form"
+					},
+					"response": []
+				},
+				{
+					"name": "Create City",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "City Test {{$timestamp}}",
+									"type": "text"
+								},
+								{
+									"key": "estado.codigo",
+									"value": "1",
+									"type": "text",
+									"description": "State ID"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/cidades/nova",
+							"host": ["{{base_url}}"],
+							"path": ["cidades", "nova"]
+						},
+						"description": "Create a new city - Requires CADASTRAR_CIDADE role"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cities by State (JSON - Cached)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each city has required fields\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('codigo');",
+									"        pm.expect(jsonData[0]).to.have.property('nome');",
+									"        pm.expect(jsonData[0]).to.have.property('estado');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cidades?estado=1",
+							"host": ["{{base_url}}"],
+							"path": ["cidades"],
+							"query": [
+								{
+									"key": "estado",
+									"value": "1",
+									"description": "State ID"
+								}
+							]
+						},
+						"description": "Get cities by state ID (cached response with @Cacheable)"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Cities - Paginated",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/cidades?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["cidades"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "nome",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "estado",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Search cities with pagination (HTML response)"
+					},
+					"response": []
+				}
+			],
+			"description": "City (Cidade) management endpoints"
+		},
+		{
+			"name": "Actuator - Monitoring",
+			"item": [
+				{
+					"name": "Health Check (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Health status is UP\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"UP\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 500ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health"]
+						},
+						"description": "Public health check endpoint - No authentication required"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check - Detailed",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Detailed health info present\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('components');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health"]
+						},
+						"description": "Detailed health check - Shows components if authenticated with ADMIN role"
+					},
+					"response": []
+				},
+				{
+					"name": "Liveness Probe (Kubernetes)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Liveness status is UP\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"UP\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health/liveness",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health", "liveness"]
+						},
+						"description": "Kubernetes liveness probe endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Readiness Probe (Kubernetes)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Readiness status is UP\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"UP\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health/readiness",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health", "readiness"]
+						},
+						"description": "Kubernetes readiness probe endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Application Info (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"App info contains version\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('app');",
+									"    pm.expect(jsonData.app).to.have.property('version');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/info",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "info"]
+						},
+						"description": "Application information - No authentication required"
+					},
+					"response": []
+				},
+				{
+					"name": "Metrics List (Requires ADMIN)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 401/403\", function () {",
+									"    pm.expect([200, 401, 403]).to.include(pm.response.code);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Metrics list present\", function () {",
+									"        const jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('names');",
+									"        pm.expect(jsonData.names).to.be.an('array');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/metrics",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "metrics"]
+						},
+						"description": "List all available metrics - Requires ADMIN role"
+					},
+					"response": []
+				},
+				{
+					"name": "JVM Memory Metrics (Requires ADMIN)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Memory metric data present\", function () {",
+									"        const jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('name');",
+									"        pm.expect(jsonData).to.have.property('measurements');",
+									"        pm.expect(jsonData.measurements).to.be.an('array');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/metrics/jvm.memory.used",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "metrics", "jvm.memory.used"]
+						},
+						"description": "JVM memory usage metrics - Requires ADMIN role"
+					},
+					"response": []
+				},
+				{
+					"name": "HTTP Requests Metrics (Requires ADMIN)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/metrics/http.server.requests",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "metrics", "http.server.requests"]
+						},
+						"description": "HTTP server requests metrics - Requires ADMIN role"
+					},
+					"response": []
+				}
+			],
+			"description": "Spring Boot Actuator monitoring endpoints"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"// Add session cookie if available",
+					"if (pm.environment.get('sessionCookie')) {",
+					"    pm.request.headers.add({",
+					"        key: 'Cookie',",
+					"        value: 'JSESSIONID=' + pm.environment.get('sessionCookie')",
+					"    });",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"pm.test(\"Response time is acceptable\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": []
+}
