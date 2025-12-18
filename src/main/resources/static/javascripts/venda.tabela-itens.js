@@ -56,7 +56,7 @@ Brewer.TabelaItens = (function() {
 	}
 
 	function onDoubleClick(evento) {
-		$(this).removAttr('readonly');
+		$(this).removeAttr('readonly');
 	}
 
 	function bindQuantidade() {

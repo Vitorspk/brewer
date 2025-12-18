@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.algaworks.brewer.model.Cerveja;
@@ -51,7 +52,8 @@ public class VendasController {
 	 */
 	@PostMapping("/item")
 	public ModelAndView adicionarItem(Long codigoCerveja) {
-		Cerveja cerveja = cervejas.findById(codigoCerveja).orElse(null);
+		Cerveja cerveja = cervejas.findById(codigoCerveja)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cerveja não encontrada"));
 		tabelaItensVenda.adicionarItem(cerveja, 1);
 		return mvTabelaItensVenda();
 	}
@@ -62,7 +64,8 @@ public class VendasController {
 	@PutMapping("/item/{codigoCerveja}")
 	public ModelAndView alterarQuantidadeItem(@PathVariable Long codigoCerveja,
 			@RequestParam Integer quantidade) {
-		Cerveja cerveja = cervejas.findById(codigoCerveja).orElse(null);
+		Cerveja cerveja = cervejas.findById(codigoCerveja)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cerveja não encontrada"));
 		tabelaItensVenda.alterarQuantidadeItens(cerveja, quantidade);
 		return mvTabelaItensVenda();
 	}
@@ -72,7 +75,8 @@ public class VendasController {
 	 */
 	@DeleteMapping("/item/{codigoCerveja}")
 	public ModelAndView excluirItem(@PathVariable Long codigoCerveja) {
-		Cerveja cerveja = cervejas.findById(codigoCerveja).orElse(null);
+		Cerveja cerveja = cervejas.findById(codigoCerveja)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cerveja não encontrada"));
 		tabelaItensVenda.excluirItem(cerveja);
 		return mvTabelaItensVenda();
 	}
