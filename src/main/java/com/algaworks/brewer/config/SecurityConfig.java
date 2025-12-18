@@ -34,6 +34,8 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.authorizeHttpRequests(authorize -> authorize
+				// Public endpoints - no authentication required
+				.requestMatchers("/", "/login", "/error", "/404", "/500", "/403").permitAll()
 				// Actuator endpoints - public health check, restricted management endpoints
 				.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
 				.requestMatchers("/actuator/info").permitAll()
@@ -45,7 +47,7 @@ public class SecurityConfig {
 			)
 			.formLogin(form -> form
 				.loginPage("/login")
-				.defaultSuccessUrl("/cervejas", true)
+				.defaultSuccessUrl("/cervejas", false)
 				.permitAll()
 			)
 			.logout(logout -> logout
