@@ -3,6 +3,8 @@ package com.algaworks.brewer.controller;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +34,30 @@ public class FotosController {
 	@Autowired
 	private FotoStorage fotoStorage;
 
+	/**
+	 * Validates that the default fallback image exists at startup.
+	 * Fails fast if the required resource is missing.
+	 */
+	@PostConstruct
+	public void validateDefaultImage() {
+		ClassPathResource resource = new ClassPathResource(DEFAULT_IMAGE_PATH);
+		if (!resource.exists()) {
+			throw new IllegalStateException(
+				String.format("Default image not found at '%s'. Application cannot start without it.", DEFAULT_IMAGE_PATH)
+			);
+		}
+		logger.info("Default image validated successfully: {}", DEFAULT_IMAGE_PATH);
+	}
+
 	@PostMapping
 	public DeferredResult<FotoDTO> upload(@RequestParam("files[]") MultipartFile[] files) {
 		DeferredResult<FotoDTO> resultado = new DeferredResult<>();
 
+		// TODO: Replace with Spring @Async and managed thread pool
+		// Current implementation creates unbounded threads which can lead to:
+		// - Resource exhaustion under high load
+		// - Potential DoS vulnerability with multiple concurrent uploads
+		// Recommendation: Use @Async("photoUploadExecutor") with configured ThreadPoolTaskExecutor
 		Thread thread = new Thread(new FotoStorageRunnable(files, resultado, fotoStorage));
 		thread.start();
 
