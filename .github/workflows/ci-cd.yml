@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ master ]
 
+# Required permissions for security scanning
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 # Cancel in-progress runs when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -134,5 +140,6 @@ jobs:
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         with:
           sarif_file: 'trivy-results.sarif'
