@@ -45,16 +45,19 @@ public class SecurityConfig {
 			)
 			.formLogin(form -> form
 				.loginPage("/login")
+				.defaultSuccessUrl("/cervejas", true)
 				.permitAll()
 			)
 			.logout(logout -> logout
 				.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+				.logoutSuccessUrl("/login")
 			)
 			.exceptionHandling(exception -> exception
 				.accessDeniedPage("/403")
 			)
 			.sessionManagement(session -> session
 				.invalidSessionUrl("/login")
+				.maximumSessions(1)
 			);
 
 		return http.build();

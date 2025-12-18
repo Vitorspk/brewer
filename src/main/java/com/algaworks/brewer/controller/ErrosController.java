@@ -1,20 +1,44 @@
 package com.algaworks.brewer.controller;
 
+import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
-public class ErrosController {
+public class ErrosController implements ErrorController {
+
+	@RequestMapping("/error")
+	public String handleError(HttpServletRequest request) {
+		Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+
+		if (status != null) {
+			int statusCode = Integer.parseInt(status.toString());
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				return "redirect:/login";
+			} else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+				return "500";
+			} else if (statusCode == HttpStatus.FORBIDDEN.value()) {
+				return "403";
+			}
+		}
+
+		return "redirect:/login";
+	}
 
 	@GetMapping("/404")
 	public String paginaNaoEncontrada() {
 		return "404";
 	}
-	
+
 	@RequestMapping("/500")
 	public String erroServidor() {
 		return "500";
 	}
-	
+
 }
