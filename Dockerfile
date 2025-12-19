@@ -35,9 +35,11 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:8080/actuator/health || exit 1
 
+# JVM configuration for containerized environments
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+  -XX:MaxRAMPercentage=75.0 \
+  -XX:InitialRAMPercentage=50.0 \
+  -Djava.security.egd=file:/dev/./urandom"
+
 # Run application
-ENTRYPOINT ["java", \
-  "-Djava.security.egd=file:/dev/./urandom", \
-  "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:prod}", \
-  "-jar", \
-  "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:prod} -jar app.jar"]

@@ -3,6 +3,19 @@
 .gitignore
 .gitattributes
 
+# Documentation
+*.md
+LICENSE
+docs/
+brewer-docs/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
 # Maven
 target/
 pom.xml.tag
@@ -10,39 +23,30 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
 
-# IDE
-.idea/
-*.iml
-.vscode/
-.settings/
-.project
-.classpath
-
-# Documentation
-README.md
-docs/
-
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
-.env
-.env.example
+# Logs
+*.log
+logs/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
 
-# Temporary files
+# Kubernetes
+k8s/
+scripts/
+
+# Temporary
 *.tmp
-*.temp
+*.bak
 *.swp
 *~
+
+# Environment
+.env
+.env.*
