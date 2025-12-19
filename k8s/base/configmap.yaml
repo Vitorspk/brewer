@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: brewer-config
+  namespace: brewer
+  labels:
+    app: brewer
+data:
+  # Application Configuration
+  SPRING_PROFILES_ACTIVE: "prod"
+  SERVER_PORT: "8080"
+
+  # Database Configuration (non-sensitive)
+  DATABASE_URL: "jdbc:mysql://brewer-mysql:3306/brewer?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+  DATABASE_USERNAME: "brewer"
+
+  # AWS Configuration
+  AWS_REGION: "sa-east-1"
+  AWS_S3_BUCKET: "brewer-fotos"
+
+  # JPA Configuration
+  SPRING_JPA_SHOW_SQL: "false"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+  SPRING_JPA_OPEN_IN_VIEW: "false"
+
+  # Flyway Configuration
+  SPRING_FLYWAY_ENABLED: "true"
+  SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+
+  # Actuator Configuration
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+  MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "when-authorized"
+
+  # Mail Configuration (non-sensitive)
+  MAIL_HOST: "smtp.gmail.com"
+  MAIL_PORT: "587"
+
+  # Photo Storage
+  BREWER_FOTO_STORAGE_LOCAL: "/app/fotos"
+  BREWER_FOTO_STORAGE_LOCAL_URL_BASE: "http://brewer-app:8080/fotos/"
