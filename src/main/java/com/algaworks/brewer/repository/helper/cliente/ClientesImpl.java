@@ -37,13 +37,17 @@ public class ClientesImpl implements ClientesQueries {
 		CriteriaQuery<Cliente> criteriaQuery = builder.createQuery(Cliente.class);
 		Root<Cliente> root = criteriaQuery.from(Cliente.class);
 
-		// Left outer joins (similar to JoinType.LEFT_OUTER_JOIN)
-		Join<Cliente, Endereco> enderecoJoin = root.join("endereco", JoinType.LEFT);
-		Join<Endereco, Cidade> cidadeJoin = enderecoJoin.join("cidade", JoinType.LEFT);
-		Join<Cidade, Estado> estadoJoin = cidadeJoin.join("estado", JoinType.LEFT);
+		// Fetch joins to avoid LazyInitializationException
+		// Use fetch instead of join to load related entities eagerly
+		root.fetch("endereco", JoinType.LEFT)
+			.fetch("cidade", JoinType.LEFT)
+			.fetch("estado", JoinType.LEFT);
 
 		Predicate[] predicates = criarPredicates(filtro, builder, root);
 		criteriaQuery.where(predicates);
+
+		// Distinct to avoid duplicates from fetch join
+		criteriaQuery.select(root).distinct(true);
 
 		// Apply sorting from Pageable
 		if (pageable.getSort().isSorted()) {
