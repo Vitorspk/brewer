@@ -6,18 +6,21 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import com.algaworks.brewer.model.Cerveja;
 import com.algaworks.brewer.model.Cliente;
@@ -26,27 +29,27 @@ import com.algaworks.brewer.model.StatusVenda;
 import com.algaworks.brewer.model.TipoPessoa;
 import com.algaworks.brewer.model.Venda;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
+@DisplayName("Testes do Template ResumoVenda")
+class ResumoVendaTemplateTest {
 
-@SpringBootTest
-@EnableAutoConfiguration(exclude = {
-	SecurityAutoConfiguration.class,
-	UserDetailsServiceAutoConfiguration.class
-})
-@TestPropertySource(locations = "classpath:application-test.properties")
-@DisplayName("Testes de Integração - Mailer")
-class MailerIntegrationTest {
-
-	@Autowired
 	private TemplateEngine thymeleaf;
-
 	private Venda venda;
 	private Cliente cliente;
 
 	@BeforeEach
 	void setUp() {
+		// Configure Thymeleaf template engine
+		ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+		templateResolver.setPrefix("templates/");
+		templateResolver.setSuffix(".html");
+		templateResolver.setTemplateMode(TemplateMode.HTML);
+		templateResolver.setCharacterEncoding("UTF-8");
+		templateResolver.setCheckExistence(true);
+		templateResolver.setCacheable(false);
+
+		thymeleaf = new SpringTemplateEngine();
+		((SpringTemplateEngine) thymeleaf).setTemplateResolver(templateResolver);
+
 		// Setup cliente
 		cliente = new Cliente();
 		cliente.setCodigo(1L);
@@ -137,7 +140,7 @@ class MailerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Template de e-mail deve conter itens da venda")
+	@DisplayName("Template de e-mail deve conter itens da venda incluindo SKU")
 	void templateDeveConterItensDaVenda() {
 		// Given
 		Context context = new Context(new Locale("pt", "BR"));
@@ -151,7 +154,7 @@ class MailerIntegrationTest {
 
 		// Then
 		assertThat(html).contains("Cerveja Pilsen");
-		assertThat(html).contains("AA1234");
+		assertThat(html).contains("AA1234"); // SKU deve estar presente
 	}
 
 	@Test
