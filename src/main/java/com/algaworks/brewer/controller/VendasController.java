@@ -151,12 +151,20 @@ public class VendasController {
 		}
 
 		venda.setUsuario(usuarioSistema.getUsuario());
-
 		venda = cadastroVendaService.salvar(venda);
-		mailer.enviar(venda);
 
-		attributes.addFlashAttribute("mensagem", "Venda salva com sucesso! O e-mail será enviado em breve.");
+		enviarEmailSeClientePossuir(venda, attributes);
+
 		return new ModelAndView("redirect:/vendas/nova");
+	}
+
+	private void enviarEmailSeClientePossuir(Venda venda, RedirectAttributes attributes) {
+		if (venda.getCliente() != null && venda.getCliente().getEmail() != null && !venda.getCliente().getEmail().isBlank()) {
+			mailer.enviar(venda);
+			attributes.addFlashAttribute("mensagem", "Venda salva com sucesso! O e-mail será enviado em breve.");
+		} else {
+			attributes.addFlashAttribute("mensagem", "Venda salva com sucesso! Não foi possível enviar e-mail: cliente sem e-mail cadastrado.");
+		}
 	}
 
 	private void validarVenda(Venda venda, BindingResult result) {
