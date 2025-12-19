@@ -76,8 +76,10 @@
 								<i class="glyphicon glyphicon-pencil"></i>
 							</a>
 							<a class="btn  btn-link  btn-xs  js-exclusao-btn"
-							   th:data-codigo="${cliente.codigo}"
-							   th:data-nome="${cliente.nome}"
+							   th:data-entity-type="cliente"
+							   th:data-entity-id="${cliente.codigo}"
+							   th:data-entity-name="${cliente.nome}"
+							   data-url-base="/clientes"
 							   title="Excluir">
 								<i class="glyphicon glyphicon-remove"></i>
 							</a>
@@ -96,7 +98,7 @@
 </section>
 
 <th:block layout:fragment="javascript-extra">
-	<script th:src="@{/javascripts/cliente.exclusao.js}"></script>
+	<script th:src="@{/javascripts/exclusao-generica.js}"></script>
 </th:block>
 
 </body>

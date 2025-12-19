@@ -14,8 +14,23 @@ import org.springframework.util.StringUtils;
  *
  * Converte strings no formato brasileiro (ex: "8,50", "1.234,56") para BigDecimal.
  * Remove pontos (separador de milhares) e substitui vírgula por ponto.
+ *
+ * Usa static final para DecimalFormat para melhor performance, evitando
+ * criação de objetos a cada conversão.
  */
 public class BigDecimalConverter implements Converter<String, BigDecimal> {
+
+	private static final DecimalFormatSymbols SYMBOLS;
+	private static final DecimalFormat FORMAT;
+
+	static {
+		SYMBOLS = new DecimalFormatSymbols(new Locale("pt", "BR"));
+		SYMBOLS.setGroupingSeparator('.');
+		SYMBOLS.setDecimalSeparator(',');
+
+		FORMAT = new DecimalFormat("#,##0.00", SYMBOLS);
+		FORMAT.setParseBigDecimal(true);
+	}
 
 	@Override
 	public BigDecimal convert(String source) {
@@ -23,21 +38,15 @@ public class BigDecimalConverter implements Converter<String, BigDecimal> {
 			return null;
 		}
 
-		// Remove espaços em branco
 		source = source.trim();
 
 		try {
-			// Configura formato brasileiro
-			DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("pt", "BR"));
-			symbols.setGroupingSeparator('.');
-			symbols.setDecimalSeparator(',');
-
-			DecimalFormat format = new DecimalFormat("#,##0.##", symbols);
-			format.setParseBigDecimal(true);
-
-			return (BigDecimal) format.parse(source);
+			// DecimalFormat não é thread-safe, então sincronizamos o acesso
+			synchronized (FORMAT) {
+				return (BigDecimal) FORMAT.parse(source);
+			}
 		} catch (ParseException e) {
-			// Se falhar, tenta formato americano (ponto como decimal)
+			// Se falhar, tenta um fallback manual
 			try {
 				return new BigDecimal(source.replace(".", "").replace(",", "."));
 			} catch (NumberFormatException ex) {

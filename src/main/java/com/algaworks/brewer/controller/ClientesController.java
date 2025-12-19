@@ -31,6 +31,7 @@ import com.algaworks.brewer.repository.Estados;
 import com.algaworks.brewer.repository.filter.ClienteFilter;
 import com.algaworks.brewer.service.CadastroClienteService;
 import com.algaworks.brewer.service.exception.CpfCnpjClienteJaCadastradoException;
+import com.algaworks.brewer.service.exception.ImpossivelExcluirEntidadeException;
 
 @Controller
 @RequestMapping("/clientes")
@@ -69,7 +70,7 @@ public class ClientesController {
 			cadastroClienteService.excluir(cliente);
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
-		} catch (Exception e) {
+		} catch (ImpossivelExcluirEntidadeException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 		return ResponseEntity.ok().build();
