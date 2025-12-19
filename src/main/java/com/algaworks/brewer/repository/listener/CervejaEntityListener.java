@@ -3,6 +3,7 @@ package com.algaworks.brewer.repository.listener;
 import jakarta.persistence.PostLoad;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -11,13 +12,18 @@ import com.algaworks.brewer.model.Cerveja;
 import com.algaworks.brewer.storage.FotoStorage;
 
 @Component
-public class CervejaEntityListener implements ApplicationContextAware {
+public class CervejaEntityListener implements ApplicationContextAware, DisposableBean {
 
 	private static ApplicationContext applicationContext;
 
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
-		applicationContext = context;
+		CervejaEntityListener.applicationContext = context;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		CervejaEntityListener.applicationContext = null;
 	}
 
 	@PostLoad
