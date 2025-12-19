@@ -15,11 +15,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
 
+import com.algaworks.brewer.config.TestConfig;
 import com.algaworks.brewer.model.Cerveja;
 import com.algaworks.brewer.model.Estilo;
 import com.algaworks.brewer.model.Origem;
@@ -33,6 +35,7 @@ import com.algaworks.brewer.repository.filter.CervejaFilter;
 	UserDetailsServiceAutoConfiguration.class
 })
 @TestPropertySource(locations = "classpath:application-test.properties")
+@Import(TestConfig.class)
 @DisplayName("Testes de Integração - CervejasRepository")
 class CervejasIntegrationTest {
 

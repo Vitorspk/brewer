@@ -71,3 +71,12 @@ cookies.txt
 # Use *.example.json templates instead
 postman/*environment.json
 !postman/*.example.json
+
+# AWS Credentials - NEVER commit these files
+.env
+.env.local
+.env.*.local
+*-credentials.txt
+AWS_S3_CREDENTIALS.md
+.aws-credentials
+.brewer-aws-credentials

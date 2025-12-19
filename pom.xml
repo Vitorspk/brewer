@@ -37,6 +37,9 @@
 		<!-- JasperReports - Geração de relatórios PDF -->
 		<jasperreports.version>6.21.2</jasperreports.version>
 		<jasperreports-fonts.version>6.21.0</jasperreports-fonts.version>
+
+		<!-- AWS SDK - S3 Storage -->
+		<aws-java-sdk-s3.version>1.12.565</aws-java-sdk-s3.version>
 	</properties>
 
 	<dependencies>
@@ -161,6 +164,14 @@
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
 			<version>${jasperreports-fonts.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- AWS SDK - S3 Storage -->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>${aws-java-sdk-s3.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
