@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/LayoutPadrao}"
+	xmlns:brewer="http://brewer.algaworks.com"
+	xmlns:data="http://www.thymeleaf.org/extras/data">
+
+<head>
+	<title>Pesquisa de vendas</title>
+</head>
+
+<body>
+<section layout:fragment="conteudo">
+
+	<div class="page-header">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-xs-10">
+					<h1>Pesquisa de vendas</h1>
+				</div>
+
+				<div class="col-xs-2">
+					<div class="aw-page-header-controls">
+						<a class="btn  btn-default" th:href="@{/vendas/nova}">
+							<i class="glyphicon  glyphicon-plus-sign"></i> <span class="hidden-xs  hidden-sm">Nova venda</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="container-fluid">
+
+		<form method="GET" th:object="${vendaFilter}" th:action="@{/vendas}">
+
+			<div class="row">
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="codigo">Código</label>
+					<input type="text" class="form-control" id="codigo" autofocus="autofocus" th:field="*{codigo}"/>
+				</div>
+
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="status">Status</label>
+					<select id="status" class="form-control" th:field="*{status}">
+						<option value="">Todos os status</option>
+						<option th:each="status : ${todosStatus}" th:value="${status}" th:text="${status.descricao}"></option>
+					</select>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="dataCriacaoInicio">Criada a partir de</label>
+					<input type="text" class="form-control  js-date" id="dataCriacaoInicio" th:field="*{dataCriacaoInicio}"
+						autocomplete="off"/>
+				</div>
+
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="dataCriacaoFim">Até</label>
+					<input type="text" class="form-control  js-date" id="dataCriacaoFim" th:field="*{dataCriacaoFim}"
+						autocomplete="off"/>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="valorMinimo">Valor mínimo</label>
+					<input type="text" class="form-control  js-decimal" id="valorMinimo" th:field="*{valorMinimo}"/>
+				</div>
+
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="valorMaximo">Valor máximo</label>
+					<input type="text" class="form-control  js-decimal" id="valorMaximo" th:field="*{valorMaximo}"/>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="nomeCliente">Nome do cliente</label>
+					<input type="text" class="form-control" id="nomeCliente" th:field="*{nomeCliente}"/>
+				</div>
+
+				<div class="form-group  col-sm-6">
+					<label class="control-label" for="cpfOuCnpjCliente">CPF/CNPJ do cliente</label>
+					<input type="text" class="form-control" id="cpfOuCnpjCliente" th:field="*{cpfOuCnpjCliente}"/>
+				</div>
+			</div>
+
+			<button type="submit" class="btn  btn-primary">Pesquisar</button>
+		</form>
+
+		<div class="table-responsive  bw-tabela-simples">
+			<table class="table  table-hover">
+				<thead>
+					<tr>
+						<th class="table-vendas-col-codigo">
+							<brewer:order page="${pagina}" field="codigo" text="Código"/>
+						</th>
+						<th class="table-vendas-col-data-criacao">
+							<brewer:order page="${pagina}" field="dataCriacao" text="Data de criação"/>
+						</th>
+						<th class="table-vendas-col-cliente">Cliente</th>
+						<th class="table-vendas-col-valor-total">
+							<brewer:order page="${pagina}" field="valorTotal" text="Valor total"/>
+						</th>
+						<th class="table-vendas-col-status">
+							<brewer:order page="${pagina}" field="status" text="Status"/>
+						</th>
+						<th class="table-vendas-col-acoes"></th>
+					</tr>
+				</thead>
+
+				<tbody>
+					<tr th:each="venda : ${pagina.conteudo}">
+						<td class="text-center" th:text="${venda.codigo}">1</td>
+						<td class="text-center" th:text="${{venda.dataCriacao}}">01/01/2020</td>
+						<td th:text="${venda.nomeCliente}">João Silva</td>
+						<td class="text-right" th:text="|R$ ${{venda.valorTotal}}|">R$ 100,00</td>
+						<td class="text-center">
+							<span class="label" th:text="${venda.status.descricao}"
+								th:classappend="${venda.status.name() == 'CANCELADA'} ? 'label-danger' : 'label-success'">Emitida</span>
+						</td>
+						<td class="text-center">
+							<a class="btn  btn-link  btn-xs  js-tooltip" title="Editar"
+								th:href="@{/vendas/{codigo}(codigo=${venda.codigo})}">
+								<i class="glyphicon glyphicon-pencil"></i>
+							</a>
+							<a class="btn  btn-link  btn-xs  js-tooltip" title="Cancelar"
+								th:if="${venda.status.name() == 'EMITIDA'}"
+								data:codigo="${venda.codigo}">
+								<i class="glyphicon glyphicon-remove"></i>
+							</a>
+						</td>
+					</tr>
+					<tr th:if="${pagina.vazia}">
+						<td colspan="6">Nenhuma venda encontrada</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<brewer:pagination page="${pagina}"/>
+	</div>
+
+</section>
+</body>
+</html>

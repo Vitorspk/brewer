@@ -2,23 +2,41 @@ package com.algaworks.brewer.controller;
 
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.algaworks.brewer.controller.page.PageWrapper;
+import com.algaworks.brewer.service.VendaValidator;
 import com.algaworks.brewer.model.Cerveja;
+import com.algaworks.brewer.model.StatusVenda;
+import com.algaworks.brewer.model.Venda;
 import com.algaworks.brewer.repository.Cervejas;
+import com.algaworks.brewer.repository.Vendas;
+import com.algaworks.brewer.repository.filter.VendaFilter;
+import com.algaworks.brewer.security.UsuarioSistema;
+import com.algaworks.brewer.service.CadastroVendaService;
 import com.algaworks.brewer.session.TabelaItensVenda;
 
 @Controller
@@ -31,19 +49,107 @@ public class VendasController {
 	@Autowired
 	private TabelaItensVenda tabelaItensVenda;
 
+	@Autowired
+	private CadastroVendaService cadastroVendaService;
+
+	@Autowired
+	private VendaValidator vendaValidator;
+
+	@Autowired
+	private Vendas vendas;
+
+	@InitBinder("venda")
+	public void inicializarValidador(WebDataBinder binder) {
+		binder.setValidator(vendaValidator);
+	}
+
 	@GetMapping("/nova")
-	public ModelAndView nova() {
+	public ModelAndView nova(Venda venda) {
 		ModelAndView mv = new ModelAndView("venda/CadastroVenda");
 
-		if (tabelaItensVenda.getUuid() == null) {
-			tabelaItensVenda.setUuid(UUID.randomUUID().toString());
-		}
-
-		mv.addObject("itens", tabelaItensVenda.getItens());
+		setUuid(venda);
+		mv.addObject("itens", venda.getItens());
 		mv.addObject("valorTotal", tabelaItensVenda.getValorTotal());
-		mv.addObject("valorTotalItens", tabelaItensVenda.getValorTotal());
+		mv.addObject("statusVenda", StatusVenda.values());
 
 		return mv;
+	}
+
+	@PostMapping(value = "/nova", params = "salvar")
+	public ModelAndView salvar(@Valid Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+		validarVenda(venda, result);
+		if (result.hasErrors()) {
+			return nova(venda);
+		}
+
+		venda.setUsuario(usuarioSistema.getUsuario());
+
+		cadastroVendaService.salvar(venda);
+		attributes.addFlashAttribute("mensagem", "Venda salva com sucesso");
+		return new ModelAndView("redirect:/vendas/nova");
+	}
+
+	@PostMapping(value = "/nova", params = "emitir")
+	public ModelAndView emitir(@Valid Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+		validarVenda(venda, result);
+		if (result.hasErrors()) {
+			return nova(venda);
+		}
+
+		venda.setUsuario(usuarioSistema.getUsuario());
+
+		cadastroVendaService.emitir(venda);
+		attributes.addFlashAttribute("mensagem", "Venda emitida com sucesso");
+		return new ModelAndView("redirect:/vendas/nova");
+	}
+
+	@PostMapping("/cancelar/{codigo}")
+	public @ResponseBody String cancelar(@PathVariable("codigo") Venda venda) {
+		try {
+			cadastroVendaService.cancelar(venda);
+		} catch (AccessDeniedException e) {
+			return e.getMessage();
+		}
+
+		return "";
+	}
+
+	@GetMapping
+	public ModelAndView pesquisar(VendaFilter vendaFilter, BindingResult result,
+			@PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest) {
+		ModelAndView mv = new ModelAndView("venda/PesquisaVendas");
+		mv.addObject("todosStatus", StatusVenda.values());
+
+		PageWrapper<Venda> paginaWrapper = new PageWrapper<>(vendas.filtrar(vendaFilter, pageable), httpServletRequest);
+		mv.addObject("pagina", paginaWrapper);
+		return mv;
+	}
+
+	@GetMapping("/{codigo}")
+	public ModelAndView editar(@PathVariable Long codigo) {
+		Venda venda = vendas.buscarComItens(codigo);
+
+		setUuid(venda);
+		for (com.algaworks.brewer.model.ItemVenda item : venda.getItens()) {
+			tabelaItensVenda.adicionarItem(item.getCerveja(), item.getQuantidade());
+		}
+
+		ModelAndView mv = nova(venda);
+		mv.addObject(venda);
+		return mv;
+	}
+
+	private void validarVenda(Venda venda, BindingResult result) {
+		venda.adicionarItens(tabelaItensVenda.getItens());
+		venda.calcularValorTotal();
+
+		vendaValidator.validate(venda, result);
+	}
+
+	private void setUuid(Venda venda) {
+		if (tabelaItensVenda.getUuid() == null) {
+			tabelaItensVenda.setUuid(venda.getUuid() != null ? venda.getUuid() : UUID.randomUUID().toString());
+		}
 	}
 
 	/**
