@@ -1,19 +1,33 @@
 package com.algaworks.brewer.repository.listener;
 
-import javax.persistence.PostLoad;
+import jakarta.persistence.PostLoad;
 
-import com.algaworks.brewer.BrewerApplication;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
 import com.algaworks.brewer.model.Cerveja;
 import com.algaworks.brewer.storage.FotoStorage;
 
-public class CervejaEntityListener {
+@Component
+public class CervejaEntityListener implements ApplicationContextAware {
+
+	private static ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext context) throws BeansException {
+		applicationContext = context;
+	}
 
 	@PostLoad
 	public void postLoad(final Cerveja cerveja) {
-		FotoStorage fotoStorage = BrewerApplication.getBean(FotoStorage.class);
-		
-		cerveja.setUrlFoto(fotoStorage.getUrl(cerveja.getFotoOuMock()));
-		cerveja.setUrlThumbnailFoto(fotoStorage.getUrl(FotoStorage.THUMBNAIL_PREFIX + cerveja.getFotoOuMock()));
+		if (applicationContext != null) {
+			FotoStorage fotoStorage = applicationContext.getBean(FotoStorage.class);
+
+			cerveja.setUrlFoto(fotoStorage.getUrl(cerveja.getFotoOuMock()));
+			cerveja.setUrlThumbnailFoto(fotoStorage.getUrl(FotoStorage.THUMBNAIL_PREFIX + cerveja.getFotoOuMock()));
+		}
 	}
-	
+
 }

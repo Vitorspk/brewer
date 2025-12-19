@@ -211,22 +211,6 @@ public class Cerveja implements Serializable {
 		return !StringUtils.isEmpty(foto) ? foto : "cerveja-mock.png";
 	}
 
-	public String getFoto() {
-		return foto;
-	}
-
-	public void setFoto(String foto) {
-		this.foto = foto;
-	}
-
-	public String getContentType() {
-		return contentType;
-	}
-
-	public void setContentType(String contentType) {
-		this.contentType = contentType;
-	}
-
 	public boolean isNovaFoto() {
 		return novaFoto;
 	}
