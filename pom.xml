@@ -33,6 +33,10 @@
 
 		<!-- Thymeleaf extras data attribute -->
 		<thymeleaf-extras-data-attribute.version>2.0.1</thymeleaf-extras-data-attribute.version>
+
+		<!-- JasperReports - Geração de relatórios PDF -->
+		<jasperreports.version>6.21.2</jasperreports.version>
+		<jasperreports-fonts.version>6.21.0</jasperreports-fonts.version>
 	</properties>
 
 	<dependencies>
@@ -143,6 +147,20 @@
 			<groupId>net.coobird</groupId>
 			<artifactId>thumbnailator</artifactId>
 			<version>${thumbnailator.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- JasperReports - Geração de relatórios PDF -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>${jasperreports.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>${jasperreports-fonts.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
