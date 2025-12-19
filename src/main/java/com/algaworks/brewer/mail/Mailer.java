@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -20,6 +22,8 @@ import jakarta.mail.internet.MimeMessage;
 
 @Component
 public class Mailer {
+
+	private static final Logger logger = LoggerFactory.getLogger(Mailer.class);
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -53,7 +57,11 @@ public class Mailer {
 			helper.setText(mensagem, true);
 
 			mailSender.send(mimeMessage);
+			logger.info("E-mail enviado com sucesso para {} referente à venda #{}",
+					venda.getCliente().getEmail(), venda.getCodigo());
 		} catch (MessagingException e) {
+			logger.error("Erro ao enviar e-mail para {} referente à venda #{}. Erro: {}",
+					venda.getCliente().getEmail(), venda.getCodigo(), e.getMessage(), e);
 			throw new RuntimeException("Erro ao enviar e-mail", e);
 		}
 	}

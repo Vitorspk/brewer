@@ -148,6 +148,7 @@
 			<table>
 				<thead>
 					<tr>
+						<th>SKU</th>
 						<th>Produto</th>
 						<th>Qtd</th>
 						<th>Valor Unit.</th>
@@ -156,10 +157,11 @@
 				</thead>
 				<tbody>
 					<tr th:each="item : ${venda.itens}">
+						<td th:text="${item.cerveja.sku}">AA1234</td>
 						<td th:text="${item.cerveja.nome}">Cerveja Pilsen</td>
 						<td th:text="${item.quantidade}">2</td>
-						<td th:text="|R$ ${{item.valorUnitario}}|">R$ 10,00</td>
-						<td th:text="|R$ ${{item.valorTotal}}|">R$ 20,00</td>
+						<td th:text="${#numbers.formatCurrency(item.valorUnitario)}">R$ 10,00</td>
+						<td th:text="${#numbers.formatCurrency(item.valorTotal)}">R$ 20,00</td>
 					</tr>
 				</tbody>
 			</table>
@@ -168,19 +170,19 @@
 				<h3>Resumo dos Valores</h3>
 				<div class="total-item">
 					<span>Subtotal:</span>
-					<span th:text="|R$ ${{venda.valorTotalItens}}|">R$ 100,00</span>
+					<span th:text="${#numbers.formatCurrency(venda.valorTotalItens)}">R$ 100,00</span>
 				</div>
 				<div class="total-item">
 					<span>Frete:</span>
-					<span th:text="|R$ ${{venda.valorFrete}}|">R$ 10,00</span>
+					<span th:text="${#numbers.formatCurrency(venda.valorFrete)}">R$ 10,00</span>
 				</div>
 				<div class="total-item" th:if="${venda.valorDesconto != null and venda.valorDesconto > 0}">
 					<span>Desconto:</span>
-					<span th:text="|R$ ${{venda.valorDesconto}}|">R$ 0,00</span>
+					<span th:text="${#numbers.formatCurrency(venda.valorDesconto)}">R$ 0,00</span>
 				</div>
 				<div class="total-item">
 					<span>TOTAL:</span>
-					<span th:text="|R$ ${{venda.valorTotal}}|">R$ 110,00</span>
+					<span th:text="${#numbers.formatCurrency(venda.valorTotal)}">R$ 110,00</span>
 				</div>
 			</div>
 
