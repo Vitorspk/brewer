@@ -72,10 +72,13 @@
 						<td class="text-right" th:text="${cliente.telefone}">(11) 99999-9999</td>
 						<td class="text-right" th:text="${cliente.endereco.nomeCidadeSiglaEstado}"></td>
 						<td class="text-center">
-							<a class="btn  btn-link  btn-xs" title="Editar"> 
+							<a class="btn  btn-link  btn-xs" th:href="@{/clientes/{codigo}(codigo=${cliente.codigo})}" title="Editar">
 								<i class="glyphicon glyphicon-pencil"></i>
 							</a>
-							<a class="btn  btn-link  btn-xs" title="Excluir">
+							<a class="btn  btn-link  btn-xs  js-exclusao-btn"
+							   th:data-codigo="${cliente.codigo}"
+							   th:data-nome="${cliente.nome}"
+							   title="Excluir">
 								<i class="glyphicon glyphicon-remove"></i>
 							</a>
 						</td>
@@ -88,8 +91,13 @@
 		</div>
 		
 		<brewer:pagination page="${pagina}"/>
-		
+
 	</div>
 </section>
+
+<th:block layout:fragment="javascript-extra">
+	<script th:src="@{/javascripts/cliente.exclusao.js}"></script>
+</th:block>
+
 </body>
 </html>

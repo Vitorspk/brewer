@@ -23,10 +23,17 @@ RUN apk add --no-cache curl
 
 # Create non-root user for security
 RUN addgroup -S spring && adduser -S spring -G spring
+
+# Create photos directory and copy mock images (before switching to spring user)
+RUN mkdir -p /home/spring/.brewerfotos && chown -R spring:spring /home/spring/.brewerfotos
+
 USER spring:spring
 
 # Copy JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
+
+# Copy mock images to photos directory
+COPY --from=build --chown=spring:spring /app/src/main/resources/static/fotos/*mock*.png /home/spring/.brewerfotos/
 
 # Expose port
 EXPOSE 8080
