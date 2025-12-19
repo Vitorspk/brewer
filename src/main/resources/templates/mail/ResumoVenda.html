@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<style type="text/css">
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f4f4f4;
+			margin: 0;
+			padding: 0;
+		}
+
+		.container {
+			max-width: 600px;
+			margin: 20px auto;
+			background-color: #ffffff;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		}
+
+		.header {
+			background-color: #1E88E5;
+			color: #ffffff;
+			padding: 30px;
+			text-align: center;
+			border-radius: 8px 8px 0 0;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 24px;
+		}
+
+		.content {
+			padding: 30px;
+		}
+
+		.info-box {
+			background-color: #f8f9fa;
+			border-left: 4px solid #1E88E5;
+			padding: 15px;
+			margin: 20px 0;
+		}
+
+		.info-box h3 {
+			margin: 0 0 10px 0;
+			color: #333;
+			font-size: 16px;
+		}
+
+		.info-box p {
+			margin: 5px 0;
+			color: #666;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 20px 0;
+		}
+
+		table th {
+			background-color: #1E88E5;
+			color: #ffffff;
+			padding: 12px;
+			text-align: left;
+		}
+
+		table td {
+			padding: 12px;
+			border-bottom: 1px solid #dee2e6;
+		}
+
+		table tr:last-child td {
+			border-bottom: none;
+		}
+
+		.total-box {
+			background-color: #f8f9fa;
+			padding: 20px;
+			margin: 20px 0;
+			border-radius: 4px;
+		}
+
+		.total-box h3 {
+			margin: 0 0 15px 0;
+			color: #333;
+		}
+
+		.total-item {
+			display: flex;
+			justify-content: space-between;
+			padding: 8px 0;
+			border-bottom: 1px solid #dee2e6;
+		}
+
+		.total-item:last-child {
+			border-bottom: none;
+			font-weight: bold;
+			font-size: 18px;
+			color: #1E88E5;
+		}
+
+		.footer {
+			background-color: #f8f9fa;
+			padding: 20px;
+			text-align: center;
+			color: #666;
+			font-size: 12px;
+			border-radius: 0 0 8px 8px;
+		}
+
+		.btn {
+			display: inline-block;
+			padding: 12px 24px;
+			background-color: #1E88E5;
+			color: #ffffff !important;
+			text-decoration: none;
+			border-radius: 4px;
+			margin: 20px 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>Venda Realizada com Sucesso!</h1>
+			<p>Obrigado por sua compra</p>
+		</div>
+
+		<div class="content">
+			<div class="info-box">
+				<h3>Informações da Venda</h3>
+				<p><strong>Número da Venda:</strong> <span th:text="${venda.codigo}">123</span></p>
+				<p><strong>Data:</strong> <span th:text="${#temporals.format(venda.dataCriacao, 'dd/MM/yyyy')}">01/01/2024</span></p>
+				<p><strong>Status:</strong> <span th:text="${venda.status.descricao}">Emitida</span></p>
+			</div>
+
+			<div class="info-box">
+				<h3>Dados do Cliente</h3>
+				<p><strong>Nome:</strong> <span th:text="${venda.cliente.nome}">João Silva</span></p>
+				<p><strong>E-mail:</strong> <span th:text="${venda.cliente.email}">joao@exemplo.com</span></p>
+				<p><strong>Telefone:</strong> <span th:text="${venda.cliente.telefone}">(11) 98765-4321</span></p>
+			</div>
+
+			<h3>Itens da Venda</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>Produto</th>
+						<th>Qtd</th>
+						<th>Valor Unit.</th>
+						<th>Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="item : ${venda.itens}">
+						<td th:text="${item.cerveja.nome}">Cerveja Pilsen</td>
+						<td th:text="${item.quantidade}">2</td>
+						<td th:text="|R$ ${{item.valorUnitario}}|">R$ 10,00</td>
+						<td th:text="|R$ ${{item.valorTotal}}|">R$ 20,00</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div class="total-box">
+				<h3>Resumo dos Valores</h3>
+				<div class="total-item">
+					<span>Subtotal:</span>
+					<span th:text="|R$ ${{venda.valorTotalItens}}|">R$ 100,00</span>
+				</div>
+				<div class="total-item">
+					<span>Frete:</span>
+					<span th:text="|R$ ${{venda.valorFrete}}|">R$ 10,00</span>
+				</div>
+				<div class="total-item" th:if="${venda.valorDesconto != null and venda.valorDesconto > 0}">
+					<span>Desconto:</span>
+					<span th:text="|R$ ${{venda.valorDesconto}}|">R$ 0,00</span>
+				</div>
+				<div class="total-item">
+					<span>TOTAL:</span>
+					<span th:text="|R$ ${{venda.valorTotal}}|">R$ 110,00</span>
+				</div>
+			</div>
+
+			<div class="info-box" th:if="${venda.dataEntrega != null}">
+				<h3>Entrega</h3>
+				<p><strong>Data:</strong> <span th:text="${#temporals.format(venda.dataEntrega, 'dd/MM/yyyy')}">05/01/2024</span></p>
+				<p th:if="${venda.horarioEntrega != null}">
+					<strong>Horário:</strong> <span th:text="${#temporals.format(venda.horarioEntrega, 'HH:mm')}">14:00</span>
+				</p>
+				<p th:if="${venda.observacao != null and !#strings.isEmpty(venda.observacao)}">
+					<strong>Observação:</strong> <span th:text="${venda.observacao}">Entregar na portaria</span>
+				</p>
+			</div>
+
+			<center>
+				<p>Em caso de dúvidas, entre em contato conosco.</p>
+			</center>
+		</div>
+
+		<div class="footer">
+			<p>Este é um e-mail automático, por favor não responda.</p>
+			<p>&copy; 2024 Brewer - Sistema de Gerenciamento de Cervejaria</p>
+		</div>
+	</div>
+</body>
+</html>
