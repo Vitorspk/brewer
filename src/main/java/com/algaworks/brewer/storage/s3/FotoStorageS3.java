@@ -8,6 +8,7 @@ import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -28,11 +29,12 @@ import net.coobird.thumbnailator.Thumbnails;
 @Profile("prod")
 @Component
 public class FotoStorageS3 implements FotoStorage {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(FotoStorageS3.class);
 
-	private static final String BUCKET = "awbrewer";
-	
+	@Value("${aws.s3.bucket}")
+	private String bucket;
+
 	@Autowired
 	private AmazonS3 amazonS3;
 	
@@ -42,30 +44,33 @@ public class FotoStorageS3 implements FotoStorage {
 		if (files != null && files.length > 0) {
 			MultipartFile arquivo = files[0];
 			novoNome = renomearArquivo(arquivo.getOriginalFilename());
-			
+
 			try {
 				AccessControlList acl = new AccessControlList();
 				acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);
-				
-				enviarFoto(novoNome, arquivo, acl);
-				enviarThumbnail(novoNome, arquivo, acl);
+
+				// Read file content once to avoid InputStream reuse issue
+				byte[] fileBytes = arquivo.getBytes();
+
+				enviarFoto(novoNome, fileBytes, arquivo.getContentType(), acl);
+				enviarThumbnail(novoNome, fileBytes, arquivo.getContentType(), acl);
 			} catch (IOException e) {
 				throw new RuntimeException("Erro salvando arquivo no S3", e);
 			}
 		}
-		
+
 		return novoNome;
 	}
 
 	@Override
 	public byte[] recuperar(String foto) {
-		InputStream is = amazonS3.getObject(BUCKET, foto).getObjectContent();
-		try {
+		try (com.amazonaws.services.s3.model.S3Object s3Object = amazonS3.getObject(bucket, foto);
+				InputStream is = s3Object.getObjectContent()) {
 			return IOUtils.toByteArray(is);
-		} catch (IOException e) {
-			logger.error("Não conseguiu recuerar foto do S3", e);
+		} catch (Exception e) {
+			logger.error("Não foi possível recuperar a foto '{}' do S3.", foto, e);
+			throw new RuntimeException("Erro recuperando foto do S3", e);
 		}
-		return null;
 	}
 
 	@Override
@@ -75,37 +80,38 @@ public class FotoStorageS3 implements FotoStorage {
 
 	@Override
 	public void excluir(String foto) {
-		amazonS3.deleteObjects(new DeleteObjectsRequest(BUCKET).withKeys(foto, THUMBNAIL_PREFIX + foto));
+		amazonS3.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(foto, THUMBNAIL_PREFIX + foto));
 	}
 
 	@Override
 	public String getUrl(String foto) {
 		if (!StringUtils.isEmpty(foto)) {
-			return "https://s3-sa-east-1.amazonaws.com/awbrewer/" + foto;
+			return amazonS3.getUrl(bucket, foto).toString();
 		}
-		
 		return null;
 	}
 	
-	private ObjectMetadata enviarFoto(String novoNome, MultipartFile arquivo, AccessControlList acl)
+	private ObjectMetadata enviarFoto(String novoNome, byte[] fileBytes, String contentType, AccessControlList acl)
 			throws IOException {
 		ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentType(arquivo.getContentType());
-		metadata.setContentLength(arquivo.getSize());
-		amazonS3.putObject(new PutObjectRequest(BUCKET, novoNome, arquivo.getInputStream(), metadata)
+		metadata.setContentType(contentType);
+		metadata.setContentLength(fileBytes.length);
+		InputStream is = new ByteArrayInputStream(fileBytes);
+		amazonS3.putObject(new PutObjectRequest(bucket, novoNome, is, metadata)
 					.withAccessControlList(acl));
 		return metadata;
 	}
 
-	private void enviarThumbnail(String novoNome, MultipartFile arquivo, AccessControlList acl)	throws IOException {
+	private void enviarThumbnail(String novoNome, byte[] fileBytes, String contentType, AccessControlList acl) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		Thumbnails.of(arquivo.getInputStream()).size(40, 68).toOutputStream(os);
+		InputStream inputStream = new ByteArrayInputStream(fileBytes);
+		Thumbnails.of(inputStream).size(40, 68).toOutputStream(os);
 		byte[] array = os.toByteArray();
 		InputStream is = new ByteArrayInputStream(array);
 		ObjectMetadata thumbMetadata = new ObjectMetadata();
-		thumbMetadata.setContentType(arquivo.getContentType());
+		thumbMetadata.setContentType(contentType);
 		thumbMetadata.setContentLength(array.length);
-		amazonS3.putObject(new PutObjectRequest(BUCKET, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata)
+		amazonS3.putObject(new PutObjectRequest(bucket, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata)
 					.withAccessControlList(acl));
 	}
 
