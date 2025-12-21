@@ -34,7 +34,7 @@ import com.algaworks.brewer.model.Usuario;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Import(FlywayTestConfig.class)
 @DisplayName("Testes de Integração - UsuariosRepository")
-class UsuariosIntegrationTest {
+class UsuariosIntegrationTest extends BaseRepositoryIntegrationTest {
 
 	@Autowired
 	private Usuarios usuarios;

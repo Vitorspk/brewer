@@ -39,7 +39,7 @@ import com.algaworks.brewer.repository.filter.CervejaFilter;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Import({FlywayTestConfig.class, TestConfig.class})
 @DisplayName("Testes de Integração - CervejasRepository")
-class CervejasIntegrationTest {
+class CervejasIntegrationTest extends BaseRepositoryIntegrationTest {
 
 	@Autowired
 	private Cervejas cervejas;

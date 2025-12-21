@@ -27,13 +27,10 @@ import com.algaworks.brewer.model.Estilo;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Import(FlywayTestConfig.class)
 @DisplayName("Testes de Integração - EstilosRepository")
-class EstilosIntegrationTest {
+class EstilosIntegrationTest extends BaseRepositoryIntegrationTest {
 
 	@Autowired
 	private Estilos estilos;
-
-	@Autowired
-	private TestEntityManager entityManager;
 
 	@Test
 	@DisplayName("Deve salvar um estilo com sucesso")

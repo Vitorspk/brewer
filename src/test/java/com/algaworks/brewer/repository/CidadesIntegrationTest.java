@@ -32,7 +32,7 @@ import com.algaworks.brewer.model.Estado;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Import(FlywayTestConfig.class)
 @DisplayName("Testes de Integração - CidadesRepository")
-class CidadesIntegrationTest {
+class CidadesIntegrationTest extends BaseRepositoryIntegrationTest {
 
 	@Autowired
 	private Cidades cidades;

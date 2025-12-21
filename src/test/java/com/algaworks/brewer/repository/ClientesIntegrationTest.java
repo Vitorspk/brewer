@@ -32,7 +32,7 @@ import com.algaworks.brewer.model.TipoPessoa;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Import(FlywayTestConfig.class)
 @DisplayName("Testes de Integração - ClientesRepository")
-class ClientesIntegrationTest {
+class ClientesIntegrationTest extends BaseRepositoryIntegrationTest {
 
 	@Autowired
 	private Clientes clientes;
