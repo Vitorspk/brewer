@@ -1,0 +1,9 @@
+# Ignore all files in this directory
+*
+
+# Except mock images (needed for Docker build)
+!*mock*.png
+!descricao-cervejas.txt
+
+# Don't ignore this .gitignore file
+!.gitignore
