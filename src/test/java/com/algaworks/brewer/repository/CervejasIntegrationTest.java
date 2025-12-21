@@ -20,6 +20,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.context.annotation.Import;
+
+import com.algaworks.brewer.config.FlywayTestConfig;
 
 import com.algaworks.brewer.config.TestConfig;
 import com.algaworks.brewer.model.Cerveja;
@@ -35,6 +38,7 @@ import com.algaworks.brewer.repository.filter.CervejaFilter;
 	UserDetailsServiceAutoConfiguration.class
 })
 @TestPropertySource(locations = "classpath:application-test.properties")
+@Import(FlywayTestConfig.class)
 @Import(TestConfig.class)
 @DisplayName("Testes de Integração - CervejasRepository")
 class CervejasIntegrationTest {

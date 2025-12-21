@@ -16,6 +16,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.context.annotation.Import;
+
+import com.algaworks.brewer.config.FlywayTestConfig;
 
 import com.algaworks.brewer.model.Cidade;
 import com.algaworks.brewer.model.Estado;
@@ -27,6 +30,7 @@ import com.algaworks.brewer.model.Estado;
 	UserDetailsServiceAutoConfiguration.class
 })
 @TestPropertySource(locations = "classpath:application-test.properties")
+@Import(FlywayTestConfig.class)
 @DisplayName("Testes de Integração - CidadesRepository")
 class CidadesIntegrationTest {
 

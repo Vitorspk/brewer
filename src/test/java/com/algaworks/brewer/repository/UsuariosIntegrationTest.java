@@ -18,6 +18,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.context.annotation.Import;
+
+import com.algaworks.brewer.config.FlywayTestConfig;
 
 import com.algaworks.brewer.model.Grupo;
 import com.algaworks.brewer.model.Usuario;
@@ -29,6 +32,7 @@ import com.algaworks.brewer.model.Usuario;
 	UserDetailsServiceAutoConfiguration.class
 })
 @TestPropertySource(locations = "classpath:application-test.properties")
+@Import(FlywayTestConfig.class)
 @DisplayName("Testes de Integração - UsuariosRepository")
 class UsuariosIntegrationTest {
 
