@@ -34,11 +34,12 @@ public class CidadesImpl implements CidadesQueries {
 		CriteriaQuery<Cidade> criteriaQuery = builder.createQuery(Cidade.class);
 		Root<Cidade> root = criteriaQuery.from(Cidade.class);
 
-		// Create alias for estado (similar to createAlias)
-		Join<Cidade, Estado> estadoJoin = root.join("estado");
+		// Create fetch join for estado to avoid LazyInitializationException
+		root.fetch("estado");
 
 		Predicate[] predicates = criarPredicates(filtro, builder, root);
 		criteriaQuery.where(predicates);
+		criteriaQuery.distinct(true);
 
 		// Apply sorting from Pageable
 		if (pageable.getSort().isSorted()) {

@@ -72,7 +72,10 @@ public class SecurityConfig {
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		return (web) -> web.ignoring()
 			.requestMatchers("/layout/**")
-			.requestMatchers("/images/**");
+			.requestMatchers("/images/**")
+			.requestMatchers("/javascripts/**")
+			.requestMatchers("/stylesheets/**")
+			.requestMatchers("/fotos/**");
 	}
 
 	@Bean

@@ -25,6 +25,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 
+import com.algaworks.brewer.controller.converter.BigDecimalConverter;
 import com.algaworks.brewer.controller.converter.CidadeConverter;
 import com.algaworks.brewer.controller.converter.EstadoConverter;
 import com.algaworks.brewer.controller.converter.EstiloConverter;
@@ -110,9 +111,14 @@ public class WebConfig implements WebMvcConfigurer, ApplicationContextAware {
 		conversionService.addConverter(new EstadoConverter());
 		conversionService.addConverter(new GrupoConverter());
 
+		// Conversor de BigDecimal que aceita formato brasileiro (vírgula como decimal)
+		conversionService.addConverter(new BigDecimalConverter());
+
 		// Formatters de números
-		NumberStyleFormatter bigDecimalFormatter = new NumberStyleFormatter("#,##0.00");
-		conversionService.addFormatterForFieldType(BigDecimal.class, bigDecimalFormatter);
+		// NOTA: O BigDecimalConverter cuida da conversão String -> BigDecimal
+		// O NumberStyleFormatter abaixo é usado apenas para exibição (BigDecimal -> String)
+		// NumberStyleFormatter bigDecimalFormatter = new NumberStyleFormatter("#,##0.00");
+		// conversionService.addFormatterForFieldType(BigDecimal.class, bigDecimalFormatter);
 
 		NumberStyleFormatter integerFormatter = new NumberStyleFormatter("#,##0");
 		conversionService.addFormatterForFieldType(Integer.class, integerFormatter);

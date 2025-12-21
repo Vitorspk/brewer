@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -236,6 +237,14 @@ public class Venda implements Serializable {
 
 	public boolean isOrcamento() {
 		return StatusVenda.ORCAMENTO.equals(status);
+	}
+
+	public Long diasCriacao() {
+		if (dataCriacao == null) {
+			return 0L;
+		}
+		LocalDate hoje = LocalDate.now();
+		return ChronoUnit.DAYS.between(dataCriacao, hoje);
 	}
 
 	@Override
