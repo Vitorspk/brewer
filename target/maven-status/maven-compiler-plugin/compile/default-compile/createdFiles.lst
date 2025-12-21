@@ -40,7 +40,6 @@ com/algaworks/brewer/service/CadastroCidadeService.class
 com/algaworks/brewer/session/TabelaItensVenda.class
 com/algaworks/brewer/repository/helper/cidade/CidadesImpl.class
 com/algaworks/brewer/controller/handler/ControllerAdviceExceptionHandler.class
-com/algaworks/brewer/storage/FotoStorageRunnable.class
 com/algaworks/brewer/model/Permissao.class
 com/algaworks/brewer/validation/AtributoConfirmacao.class
 com/algaworks/brewer/dto/FotoDTO.class
