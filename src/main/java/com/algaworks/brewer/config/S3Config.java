@@ -27,6 +27,18 @@ public class S3Config {
 
 	@Bean
 	public AmazonS3 amazonS3() {
+		// SECURITY FIX: Validate credentials before creating client (fail-fast)
+		if (accessKeyId == null || accessKeyId.trim().isEmpty()) {
+			throw new IllegalStateException(
+					"AWS_ACCESS_KEY_ID is required but not configured. " +
+					"Set it as an environment variable or in .brewer-s3.properties");
+		}
+		if (secretAccessKey == null || secretAccessKey.trim().isEmpty()) {
+			throw new IllegalStateException(
+					"AWS_SECRET_ACCESS_KEY is required but not configured. " +
+					"Set it as an environment variable or in .brewer-s3.properties");
+		}
+
 		BasicAWSCredentials credentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 		return AmazonS3ClientBuilder.standard()
 				.withRegion(region)
