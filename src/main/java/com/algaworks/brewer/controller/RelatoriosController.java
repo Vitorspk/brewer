@@ -13,6 +13,8 @@ import org.springframework.web.servlet.ModelAndView;
 import com.algaworks.brewer.dto.PeriodoRelatorio;
 import com.algaworks.brewer.service.RelatorioService;
 
+import jakarta.validation.Valid;
+
 @Controller
 @RequestMapping("/relatorios")
 public class RelatoriosController {
@@ -28,7 +30,9 @@ public class RelatoriosController {
 	}
 
 	@PostMapping("/vendasEmitidas")
-	public ResponseEntity<byte[]> gerarRelatorioVendasEmitidas(PeriodoRelatorio periodoRelatorio) throws Exception {
+	public ResponseEntity<byte[]> gerarRelatorioVendasEmitidas(@Valid PeriodoRelatorio periodoRelatorio) throws Exception {
+		// VALIDATION FIX: Added @Valid to trigger validation of @NotNull annotations
+		// Without @Valid, the validation constraints in PeriodoRelatorio would be ignored
 		byte[] relatorio = relatorioService.gerarRelatorioVendasEmitidas(periodoRelatorio);
 
 		return ResponseEntity.ok()
