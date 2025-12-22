@@ -10,4 +10,3 @@ com/algaworks/brewer/repository/CidadesIntegrationTest.class
 com/algaworks/brewer/config/FlywayTestConfig.class
 com/algaworks/brewer/repository/EstilosIntegrationTest.class
 com/algaworks/brewer/mail/ResumoVendaTemplateTest.class
-com/algaworks/brewer/controller/RelatoriosControllerTest.class

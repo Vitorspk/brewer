@@ -1,13 +1,12 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/EstilosIntegrationTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/CervejasIntegrationTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/UsuariosIntegrationTest.java
-/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/venda/TabelaItensVendaTest.java
-/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/BaseRepositoryIntegrationTest.java
-/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/controller/RelatoriosControllerTest.java
-/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/mail/ResumoVendaTemplateTest.java
-/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/controller/converter/BigDecimalConverterTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/ClientesIntegrationTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/config/FlywayTestConfig.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/venda/TabelaItensVendaTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/CidadesIntegrationTest.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/repository/BaseRepositoryIntegrationTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/storage/s3/FotoStorageS3Test.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/mail/ResumoVendaTemplateTest.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/controller/converter/BigDecimalConverterTest.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/test/java/com/algaworks/brewer/config/TestConfig.java
