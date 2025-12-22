@@ -99,23 +99,30 @@ public class FotoStorageS3 implements FotoStorage {
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentType(contentType);
 		metadata.setContentLength(fileBytes.length);
-		InputStream is = new ByteArrayInputStream(fileBytes);
-		// Private by default - no ACL specified
-		amazonS3.putObject(new PutObjectRequest(bucket, novoNome, is, metadata));
+		// ROBUSTNESS FIX: Use try-with-resources to ensure InputStream is closed
+		try (InputStream is = new ByteArrayInputStream(fileBytes)) {
+			// Private by default - no ACL specified
+			amazonS3.putObject(new PutObjectRequest(bucket, novoNome, is, metadata));
+		}
 		return metadata;
 	}
 
 	private void enviarThumbnail(String novoNome, byte[] fileBytes, String contentType) throws IOException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		InputStream inputStream = new ByteArrayInputStream(fileBytes);
-		Thumbnails.of(inputStream).size(40, 68).toOutputStream(os);
-		byte[] array = os.toByteArray();
-		InputStream is = new ByteArrayInputStream(array);
-		ObjectMetadata thumbMetadata = new ObjectMetadata();
-		thumbMetadata.setContentType(contentType);
-		thumbMetadata.setContentLength(array.length);
-		// Private by default - no ACL specified
-		amazonS3.putObject(new PutObjectRequest(bucket, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata));
+		// ROBUSTNESS FIX: Use try-with-resources to ensure all streams are closed
+		try (ByteArrayOutputStream os = new ByteArrayOutputStream();
+			 InputStream inputStream = new ByteArrayInputStream(fileBytes)) {
+
+			Thumbnails.of(inputStream).size(40, 68).toOutputStream(os);
+			byte[] array = os.toByteArray();
+
+			try (InputStream is = new ByteArrayInputStream(array)) {
+				ObjectMetadata thumbMetadata = new ObjectMetadata();
+				thumbMetadata.setContentType(contentType);
+				thumbMetadata.setContentLength(array.length);
+				// Private by default - no ACL specified
+				amazonS3.putObject(new PutObjectRequest(bucket, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata));
+			}
+		}
 	}
 
 }
