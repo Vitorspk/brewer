@@ -1,3 +1,19 @@
+/**
+ * @deprecated
+ * Este arquivo está deprecado em favor de exclusao.generica.js
+ * CODE QUALITY FIX: Phase 12 - Medium Priority Issue #6
+ *
+ * Para migrar, atualize o HTML para usar data attributes:
+ * - data-action="excluir"
+ * - data-url="/estilos/{codigo}"
+ * - data-codigo="{codigo}"
+ * - data-nome="{nome}"
+ * - data-tipo="Estilo"
+ *
+ * E inclua: <script src="/javascripts/exclusao.generica.js"></script>
+ *
+ * Este arquivo será removido em versão futura.
+ */
 var Brewer = Brewer || {};
 
 Brewer.ExclusaoEstilo = (function() {
