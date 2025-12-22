@@ -65,7 +65,7 @@
 						</div>
 						<div class="aw-box__value">
 							<span class="js-tooltip" th:with="numeroHorasCriacao=${venda.diasCriacao()}"
-								th:text="${numeroHorasCriacao == 0} ? 'Hoje' : ${numeroHorasCriacao} == 1 ? 'Ontem' : ${numeroHorasCriacao} + ' dias'"
+								th:text="${numeroHorasCriacao == 0 ? 'Hoje' : numeroHorasCriacao == 1 ? 'Ontem' : numeroHorasCriacao + ' dias'}"
 								th:title="${#temporals.format(venda.dataCriacao, 'dd/MM/yyyy HH:mm')}">
 								Hoje
 							</span>

@@ -34,9 +34,11 @@
 
 	<div class="container-fluid">
 
-		<form method="POST" th:object="${cerveja}" class="form-vertical  js-form-loading" 
+		<form method="POST" th:object="${cerveja}" class="form-vertical  js-form-loading"
 				th:action="@{/cervejas/novo}">
 			<brewer:message/>
+
+			<input type="hidden" th:field="*{codigo}"/>
 	
 			<div class="row">
 				<div class="col-sm-2  form-group  bw-required" brewer:classforerror="sku">

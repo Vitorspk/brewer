@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ class RelatoriosControllerTest {
 	private RelatorioService relatorioService;
 
 	@Test
+	@WithMockUser
 	void deveRejeitarRequisicaoComDatasNulas() throws Exception {
 		// Given: Request with null dates (missing required fields)
 		// When: POST to /relatorios/vendasEmitidas without dates
@@ -44,6 +46,7 @@ class RelatoriosControllerTest {
 	}
 
 	@Test
+	@WithMockUser
 	void deveGerarRelatorioComDatasValidas() throws Exception {
 		// Given: Valid date range
 		LocalDate dataInicio = LocalDate.of(2025, 1, 1);
@@ -65,6 +68,7 @@ class RelatoriosControllerTest {
 	}
 
 	@Test
+	@WithMockUser
 	void deveRejeitarRequisicaoComDataInicioNula() throws Exception {
 		// Given: Request with only dataFim (dataInicio is null)
 		LocalDate dataFim = LocalDate.of(2025, 1, 31);
@@ -78,6 +82,7 @@ class RelatoriosControllerTest {
 	}
 
 	@Test
+	@WithMockUser
 	void deveRejeitarRequisicaoComDataFimNula() throws Exception {
 		// Given: Request with only dataInicio (dataFim is null)
 		LocalDate dataInicio = LocalDate.of(2025, 1, 1);
@@ -91,6 +96,7 @@ class RelatoriosControllerTest {
 	}
 
 	@Test
+	@WithMockUser
 	void deveAceitarPeriodoDeUmDia() throws Exception {
 		// Given: Same date for inicio and fim (valid edge case)
 		LocalDate data = LocalDate.of(2025, 1, 15);
@@ -110,6 +116,7 @@ class RelatoriosControllerTest {
 	}
 
 	@Test
+	@WithMockUser
 	void deveAceitarPeriodoLongo() throws Exception {
 		// Given: Long date range (1 year)
 		LocalDate dataInicio = LocalDate.of(2024, 1, 1);
