@@ -46,14 +46,17 @@ public class FotoStorageS3 implements FotoStorage {
 			novoNome = renomearArquivo(arquivo.getOriginalFilename());
 
 			try {
-				AccessControlList acl = new AccessControlList();
-				acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);
+				// SECURITY FIX: Removed public ACL
+				// Files are now private by default. Access should be controlled via:
+				// 1. Presigned URLs (recommended)
+				// 2. CloudFront with Origin Access Identity
+				// 3. Bucket policy with specific conditions
 
 				// Read file content once to avoid InputStream reuse issue
 				byte[] fileBytes = arquivo.getBytes();
 
-				enviarFoto(novoNome, fileBytes, arquivo.getContentType(), acl);
-				enviarThumbnail(novoNome, fileBytes, arquivo.getContentType(), acl);
+				enviarFoto(novoNome, fileBytes, arquivo.getContentType());
+				enviarThumbnail(novoNome, fileBytes, arquivo.getContentType());
 			} catch (IOException e) {
 				throw new RuntimeException("Erro salvando arquivo no S3", e);
 			}
@@ -91,18 +94,18 @@ public class FotoStorageS3 implements FotoStorage {
 		return null;
 	}
 	
-	private ObjectMetadata enviarFoto(String novoNome, byte[] fileBytes, String contentType, AccessControlList acl)
+	private ObjectMetadata enviarFoto(String novoNome, byte[] fileBytes, String contentType)
 			throws IOException {
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentType(contentType);
 		metadata.setContentLength(fileBytes.length);
 		InputStream is = new ByteArrayInputStream(fileBytes);
-		amazonS3.putObject(new PutObjectRequest(bucket, novoNome, is, metadata)
-					.withAccessControlList(acl));
+		// Private by default - no ACL specified
+		amazonS3.putObject(new PutObjectRequest(bucket, novoNome, is, metadata));
 		return metadata;
 	}
 
-	private void enviarThumbnail(String novoNome, byte[] fileBytes, String contentType, AccessControlList acl) throws IOException {
+	private void enviarThumbnail(String novoNome, byte[] fileBytes, String contentType) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		InputStream inputStream = new ByteArrayInputStream(fileBytes);
 		Thumbnails.of(inputStream).size(40, 68).toOutputStream(os);
@@ -111,8 +114,8 @@ public class FotoStorageS3 implements FotoStorage {
 		ObjectMetadata thumbMetadata = new ObjectMetadata();
 		thumbMetadata.setContentType(contentType);
 		thumbMetadata.setContentLength(array.length);
-		amazonS3.putObject(new PutObjectRequest(bucket, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata)
-					.withAccessControlList(acl));
+		// Private by default - no ACL specified
+		amazonS3.putObject(new PutObjectRequest(bucket, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata));
 	}
 
 }

@@ -4,11 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.algaworks.brewer.model.StatusVenda;
+import com.algaworks.brewer.model.Usuario;
 import com.algaworks.brewer.model.Venda;
 import com.algaworks.brewer.repository.Vendas;
 import com.algaworks.brewer.service.exception.ImpossivelEmitirVendaException;
@@ -47,11 +49,24 @@ public class CadastroVendaService {
 		// TODO: Publicar evento VendaEvent para controle de estoque
 	}
 
-	@PreAuthorize("#venda.usuario == principal.usuario or hasRole('CANCELAR_VENDA')")
 	@Transactional
-	public void cancelar(Venda venda) {
-		venda = vendas.findById(venda.getCodigo())
+	public void cancelar(Venda vendaParam, Usuario usuarioLogado) {
+		// Carregar venda do banco para ter o usuario carregado
+		Venda venda = vendas.findById(vendaParam.getCodigo())
 				.orElseThrow(() -> new IllegalArgumentException("Venda não encontrada"));
+
+		// Verificar autorização manualmente (SECURITY FIX)
+		// Usuário só pode cancelar vendas próprias OU ter a permissão CANCELAR_VENDA
+		boolean isProprietario = venda.getUsuario() != null &&
+				venda.getUsuario().getCodigo().equals(usuarioLogado.getCodigo());
+
+		boolean temPermissao = usuarioLogado.getGrupos().stream()
+				.flatMap(grupo -> grupo.getPermissoes().stream())
+				.anyMatch(permissao -> "ROLE_CANCELAR_VENDA".equals(permissao.getNome()));
+
+		if (!isProprietario && !temPermissao) {
+			throw new AccessDeniedException("Você não tem permissão para cancelar esta venda");
+		}
 
 		if (venda.isEmitida()) {
 			venda.setStatus(StatusVenda.CANCELADA);
