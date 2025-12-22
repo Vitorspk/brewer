@@ -13,6 +13,7 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Usuario.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/Vendas.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/dto/CervejaDTO.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/config/ClockConfig.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Grupo.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/dto/PeriodoRelatorio.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/service/event/cerveja/CervejaListener.java
