@@ -23,6 +23,7 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class VendasImpl implements VendasQueries {
@@ -67,18 +68,20 @@ public class VendasImpl implements VendasQueries {
     }
 
     @Override
-    public Venda buscarComItens(Long codigo) {
+    public Optional<Venda> buscarComItens(Long codigo) {
         CriteriaBuilder builder = manager.getCriteriaBuilder();
         CriteriaQuery<Venda> criteria = builder.createQuery(Venda.class);
         Root<Venda> root = criteria.from(Venda.class);
 
+        // ROBUSTNESS FIX: cliente is @NotNull, use INNER JOIN (default)
         root.fetch("cliente");
         root.fetch("usuario", JoinType.LEFT);
         root.fetch("itens", JoinType.LEFT).fetch("cerveja");
 
         criteria.where(builder.equal(root.get("codigo"), codigo));
 
-        return manager.createQuery(criteria).getSingleResult();
+        // ROBUSTNESS FIX: Return Optional to avoid NoResultException
+        return manager.createQuery(criteria).getResultStream().findFirst();
     }
 
     @Override
