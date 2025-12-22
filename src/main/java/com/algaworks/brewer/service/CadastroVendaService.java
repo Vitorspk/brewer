@@ -46,7 +46,12 @@ public class CadastroVendaService {
 		venda.setStatus(StatusVenda.EMITIDA);
 		vendas.save(venda);
 
-		// TODO: Publicar evento VendaEvent para controle de estoque
+		// FUTURE ENHANCEMENT: Implementar sistema de eventos para controle de estoque
+		// Quando implementado, publicar VendaEmitidaEvent para:
+		// 1. Decrementar estoque dos itens vendidos
+		// 2. Registrar movimentação de estoque
+		// 3. Notificar sistema de reposição se estoque baixo
+		// Issue: #TBD - Event-driven stock control
 	}
 
 	@Transactional
@@ -71,7 +76,13 @@ public class CadastroVendaService {
 		if (venda.isEmitida()) {
 			venda.setStatus(StatusVenda.CANCELADA);
 			vendas.save(venda);
-			// TODO: Publicar evento para liberar estoque
+
+			// FUTURE ENHANCEMENT: Implementar sistema de eventos para controle de estoque
+			// Quando implementado, publicar VendaCanceladaEvent para:
+			// 1. Retornar itens ao estoque (reverter decremento)
+			// 2. Registrar movimentação de estoque (cancelamento)
+			// 3. Atualizar relatórios e dashboards
+			// Issue: #TBD - Event-driven stock control
 		}
 	}
 
