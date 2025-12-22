@@ -34,18 +34,17 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
-      # Use AWS RDS MySQL Database
-      DATABASE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false}
-      DATABASE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-admin}
-      DATABASE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-BrewerAdmin2024}
+      # Database Configuration - Uses local MySQL by default, override with .env for RDS
+      DATABASE_URL: ${DATABASE_URL:-jdbc:mysql://mysql:3306/brewer?allowPublicKeyRetrieval=true&useSSL=false}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-brewer}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-brewer_password}
       SPRING_FLYWAY_ENABLED: ${FLYWAY_ENABLED:-true}
       SERVER_PORT: 8080
     ports:
       - "${APP_PORT:-8080}:8080"
-    # Removed dependency on local MySQL since we're using RDS
-    # depends_on:
-    #   mysql:
-    #     condition: service_healthy
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - brewer-network
     volumes:

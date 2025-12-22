@@ -27,6 +27,7 @@ import com.algaworks.brewer.model.Estilo;
 import com.algaworks.brewer.repository.Estilos;
 import com.algaworks.brewer.repository.filter.EstiloFilter;
 import com.algaworks.brewer.service.CadastroEstiloService;
+import com.algaworks.brewer.service.exception.EstiloNaoEncontradoException;
 import com.algaworks.brewer.service.exception.NomeEstiloJaCadastradoException;
 
 @Controller
@@ -49,7 +50,7 @@ public class EstilosController {
 	@GetMapping("/{codigo}")
 	public ModelAndView editar(@PathVariable Long codigo) {
 		Estilo estilo = estilos.findById(codigo).orElseThrow(() ->
-			new IllegalArgumentException("Estilo não encontrado"));
+			new EstiloNaoEncontradoException(codigo));
 		return novo(estilo);
 	}
 
@@ -95,7 +96,7 @@ public class EstilosController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void excluir(@PathVariable Long codigo) {
 		Estilo estilo = estilos.findById(codigo).orElseThrow(() ->
-			new IllegalArgumentException("Estilo não encontrado"));
+			new EstiloNaoEncontradoException(codigo));
 		cadastroEstiloService.excluir(estilo);
 	}
 
