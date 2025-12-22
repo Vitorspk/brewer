@@ -267,7 +267,16 @@
 						<include>**/*Tests.java</include>
 					</includes>
 					<argLine>-Xmx1024m</argLine>
-					<!-- Pass environment variables to tests -->
+					<!-- Pass environment variables and system properties to tests -->
+					<systemPropertyVariables>
+						<DATABASE_URL>${env.DATABASE_URL}</DATABASE_URL>
+						<DATABASE_USERNAME>${env.DATABASE_USERNAME}</DATABASE_USERNAME>
+						<DATABASE_PASSWORD>${env.DATABASE_PASSWORD}</DATABASE_PASSWORD>
+						<TEST_DB_URL>${env.TEST_DB_URL}</TEST_DB_URL>
+						<TEST_DB_USER>${env.TEST_DB_USER}</TEST_DB_USER>
+						<TEST_DB_PASSWORD>${env.TEST_DB_PASSWORD}</TEST_DB_PASSWORD>
+						<TEST_DB_DRIVER>${env.TEST_DB_DRIVER}</TEST_DB_DRIVER>
+					</systemPropertyVariables>
 					<environmentVariables>
 						<DATABASE_URL>${env.DATABASE_URL}</DATABASE_URL>
 						<DATABASE_USERNAME>${env.DATABASE_USERNAME}</DATABASE_USERNAME>
