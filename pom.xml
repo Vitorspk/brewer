@@ -267,6 +267,8 @@
 						<include>**/*Tests.java</include>
 					</includes>
 					<argLine>-Xmx1024m</argLine>
+					<!-- Environment variables are inherited automatically by Surefire -->
+					<!-- Spring Boot will read them via ${VAR:default} syntax in application-test.properties -->
 				</configuration>
 			</plugin>
 

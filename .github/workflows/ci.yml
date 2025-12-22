@@ -66,6 +66,10 @@ jobs:
         run: mvn clean test -B
         env:
           SPRING_PROFILES_ACTIVE: test
+          TEST_DB_URL: jdbc:mysql://127.0.0.1:3307/brewer_test?allowPublicKeyRetrieval=true&useSSL=false
+          TEST_DB_USER: test
+          TEST_DB_PASSWORD: test
+          TEST_DB_DRIVER: com.mysql.cj.jdbc.Driver
 
       - name: Generate test report
         if: always()
