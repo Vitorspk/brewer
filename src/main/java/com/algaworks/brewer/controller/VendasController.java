@@ -80,7 +80,8 @@ public class VendasController {
 	}
 
 	@PostMapping(value = "/nova", params = "salvar")
-	public ModelAndView salvar(@Valid Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+	public ModelAndView salvar(Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+		// ROBUSTNESS FIX: Removed @Valid - validation is done manually in validarVenda()
 		validarVenda(venda, result);
 		if (result.hasErrors()) {
 			return nova(venda);
@@ -94,7 +95,8 @@ public class VendasController {
 	}
 
 	@PostMapping(value = "/nova", params = "emitir")
-	public ModelAndView emitir(@Valid Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+	public ModelAndView emitir(Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+		// ROBUSTNESS FIX: Removed @Valid - validation is done manually in validarVenda()
 		validarVenda(venda, result);
 		if (result.hasErrors()) {
 			return nova(venda);
@@ -132,7 +134,8 @@ public class VendasController {
 
 	@GetMapping("/{codigo}")
 	public ModelAndView editar(@PathVariable Long codigo) {
-		Venda venda = vendas.buscarComItens(codigo);
+		Venda venda = vendas.buscarComItens(codigo)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venda não encontrada"));
 
 		setUuid(venda);
 		for (com.algaworks.brewer.model.ItemVenda item : venda.getItens()) {
@@ -145,7 +148,8 @@ public class VendasController {
 	}
 
 	@PostMapping(value = "/nova", params = "enviarEmail")
-	public ModelAndView enviarEmail(@Valid Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+	public ModelAndView enviarEmail(Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
+		// ROBUSTNESS FIX: Removed @Valid - validation is done manually in validarVenda()
 		validarVenda(venda, result);
 		if (result.hasErrors()) {
 			return nova(venda);

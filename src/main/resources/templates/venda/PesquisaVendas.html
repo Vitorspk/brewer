@@ -116,7 +116,7 @@
 					<tr th:each="venda : ${pagina.conteudo}">
 						<td class="text-center" th:text="${venda.codigo}">1</td>
 						<td class="text-center" th:text="${{venda.dataCriacao}}">01/01/2020</td>
-						<td th:text="${venda.nomeCliente}">João Silva</td>
+						<td th:text="${venda.cliente?.nome}">João Silva</td>
 						<td class="text-right" th:text="|R$ ${{venda.valorTotal}}|">R$ 100,00</td>
 						<td class="text-center">
 							<span class="label" th:text="${venda.status.descricao}"
