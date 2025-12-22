@@ -100,6 +100,7 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/mail/Mailer.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/config/SecurityConfig.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/Estados.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/service/exception/EstiloNaoEncontradoException.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/Usuarios.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/Grupos.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/thymeleaf/BrewerDialect.java

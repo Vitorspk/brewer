@@ -1,1 +1,12 @@
+com/algaworks/brewer/controller/converter/BigDecimalConverterTest.class
+com/algaworks/brewer/repository/BaseRepositoryIntegrationTest.class
+com/algaworks/brewer/config/TestConfig.class
+com/algaworks/brewer/repository/ClientesIntegrationTest.class
+com/algaworks/brewer/repository/CervejasIntegrationTest.class
 com/algaworks/brewer/repository/UsuariosIntegrationTest.class
+com/algaworks/brewer/venda/TabelaItensVendaTest.class
+com/algaworks/brewer/storage/s3/FotoStorageS3Test.class
+com/algaworks/brewer/repository/CidadesIntegrationTest.class
+com/algaworks/brewer/config/FlywayTestConfig.class
+com/algaworks/brewer/repository/EstilosIntegrationTest.class
+com/algaworks/brewer/mail/ResumoVendaTemplateTest.class
