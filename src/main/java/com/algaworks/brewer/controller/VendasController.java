@@ -82,30 +82,48 @@ public class VendasController {
 	@PostMapping(value = "/nova", params = "salvar")
 	public ModelAndView salvar(Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
 		// ROBUSTNESS FIX: Removed @Valid - validation is done manually in validarVenda()
-		validarVenda(venda, result);
-		if (result.hasErrors()) {
-			return nova(venda);
-		}
-
-		venda.setUsuario(usuarioSistema.getUsuario());
-
-		cadastroVendaService.salvar(venda);
-		attributes.addFlashAttribute("mensagem", "Venda salva com sucesso");
-		return new ModelAndView("redirect:/vendas/nova");
+		// CODE QUALITY FIX: Phase 12 - Medium Priority Issue #3
+		// Extracted common logic to processarVenda() to avoid duplication
+		return processarVenda(venda, result, attributes, usuarioSistema,
+			() -> cadastroVendaService.salvar(venda),
+			"Venda salva com sucesso");
 	}
 
 	@PostMapping(value = "/nova", params = "emitir")
 	public ModelAndView emitir(Venda venda, BindingResult result, RedirectAttributes attributes, @AuthenticationPrincipal UsuarioSistema usuarioSistema) {
 		// ROBUSTNESS FIX: Removed @Valid - validation is done manually in validarVenda()
+		// CODE QUALITY FIX: Phase 12 - Medium Priority Issue #3
+		// Extracted common logic to processarVenda() to avoid duplication
+		return processarVenda(venda, result, attributes, usuarioSistema,
+			() -> cadastroVendaService.emitir(venda),
+			"Venda emitida com sucesso");
+	}
+
+	/**
+	 * Processa uma venda validando, configurando usuário e executando a operação.
+	 *
+	 * CODE QUALITY FIX: Phase 12 - Medium Priority Issue #3
+	 * Método extraído para eliminar duplicação entre salvar() e emitir().
+	 *
+	 * @param venda a venda a processar
+	 * @param result binding result para validação
+	 * @param attributes redirect attributes para mensagens
+	 * @param usuarioSistema usuário autenticado
+	 * @param operacao operação a executar (salvar ou emitir)
+	 * @param mensagemSucesso mensagem a exibir em caso de sucesso
+	 * @return ModelAndView redirecionando para nova venda ou mostrando erros
+	 */
+	private ModelAndView processarVenda(Venda venda, BindingResult result,
+			RedirectAttributes attributes, UsuarioSistema usuarioSistema,
+			Runnable operacao, String mensagemSucesso) {
 		validarVenda(venda, result);
 		if (result.hasErrors()) {
 			return nova(venda);
 		}
 
 		venda.setUsuario(usuarioSistema.getUsuario());
-
-		cadastroVendaService.emitir(venda);
-		attributes.addFlashAttribute("mensagem", "Venda emitida com sucesso");
+		operacao.run();
+		attributes.addFlashAttribute("mensagem", mensagemSucesso);
 		return new ModelAndView("redirect:/vendas/nova");
 	}
 

@@ -32,6 +32,7 @@ com/algaworks/brewer/service/CadastroEstiloService.class
 com/algaworks/brewer/repository/listener/CervejaEntityListener.class
 com/algaworks/brewer/controller/CidadesController.class
 com/algaworks/brewer/repository/helper/cerveja/CervejasImpl.class
+com/algaworks/brewer/config/ClockConfig.class
 com/algaworks/brewer/config/SecurityConfig.class
 com/algaworks/brewer/service/CadastroUsuarioService.class
 com/algaworks/brewer/security/UsuarioSistema.class

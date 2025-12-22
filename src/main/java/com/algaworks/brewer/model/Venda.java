@@ -239,12 +239,33 @@ public class Venda implements Serializable {
 		return StatusVenda.ORCAMENTO.equals(status);
 	}
 
+	/**
+	 * Calcula o número de dias desde a criação da venda até hoje.
+	 *
+	 * TESTABILITY FIX: Phase 12 - Medium Priority Issue #2
+	 * Usa getCurrentDate() ao invés de LocalDate.now() hardcoded,
+	 * permitindo testes determinísticos ao sobrescrever o método.
+	 *
+	 * @return número de dias desde a criação, ou 0 se dataCriacao for null
+	 */
 	public Long diasCriacao() {
 		if (dataCriacao == null) {
 			return 0L;
 		}
-		LocalDate hoje = LocalDate.now();
+		LocalDate hoje = getCurrentDate();
 		return ChronoUnit.DAYS.between(dataCriacao, hoje);
+	}
+
+	/**
+	 * Retorna a data atual.
+	 *
+	 * Protected para permitir override nos testes com data fixa.
+	 * Em produção, usa LocalDate.now().
+	 *
+	 * @return data atual
+	 */
+	protected LocalDate getCurrentDate() {
+		return LocalDate.now();
 	}
 
 	@Override
