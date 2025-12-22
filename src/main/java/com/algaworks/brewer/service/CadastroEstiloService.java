@@ -22,7 +22,7 @@ public class CadastroEstiloService {
 	@Transactional
 	public Estilo salvar(Estilo estilo) {
 		Optional<Estilo> estiloOptional = estilos.findByNomeIgnoreCase(estilo.getNome());
-		if (estiloOptional.isPresent()) {
+		if (estiloOptional.isPresent() && !estiloOptional.get().getCodigo().equals(estilo.getCodigo())) {
 			throw new NomeEstiloJaCadastradoException("Nome do estilo já cadastrado");
 		}
 

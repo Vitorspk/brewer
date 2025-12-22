@@ -9,6 +9,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,6 +48,7 @@ public class EstilosController {
 		return mv;
 	}
 
+	@PreAuthorize("hasRole('CADASTRAR_ESTILO')")
 	@GetMapping("/{codigo}")
 	public ModelAndView editar(@PathVariable Long codigo) {
 		Estilo estilo = estilos.findById(codigo).orElseThrow(() ->
@@ -92,6 +94,7 @@ public class EstilosController {
 		return mv;
 	}
 
+	@PreAuthorize("hasRole('CADASTRAR_ESTILO')")
 	@DeleteMapping("/{codigo}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void excluir(@PathVariable Long codigo) {
