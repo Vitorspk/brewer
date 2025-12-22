@@ -108,11 +108,12 @@ public class VendasController {
 	}
 
 	@PostMapping("/cancelar/{codigo}")
-	public @ResponseBody String cancelar(@PathVariable("codigo") Venda venda) {
+	public @ResponseBody String cancelar(@PathVariable("codigo") Venda venda,
+			@AuthenticationPrincipal UsuarioSistema usuarioSistema) {
 		try {
-			cadastroVendaService.cancelar(venda);
+			cadastroVendaService.cancelar(venda, usuarioSistema.getUsuario());
 		} catch (AccessDeniedException e) {
-			return e.getMessage();
+			return "Acesso negado";
 		}
 
 		return "";
