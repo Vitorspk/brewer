@@ -138,10 +138,13 @@
 		</dependency>
 
 		<!-- Apache Commons BeanUtils -->
+		<!-- SECURITY FIX: Updated from 1.9.4 to 1.11.0 to address CVE-2025-48734 -->
+		<!-- CVE-2025-48734: Improper Access Control vulnerability allowing remote code execution -->
+		<!-- Fix: Version 1.11.0 includes BeanIntrospector that blocks "declaredClass" property access -->
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
-			<version>1.9.4</version>
+			<version>1.11.0</version>
 			<scope>compile</scope>
 		</dependency>
 
