@@ -15,22 +15,22 @@ import org.springframework.util.StringUtils;
  * Converte strings no formato brasileiro (ex: "8,50", "1.234,56") para BigDecimal.
  * Remove pontos (separador de milhares) e substitui vírgula por ponto.
  *
- * Usa static final para DecimalFormat para melhor performance, evitando
- * criação de objetos a cada conversão.
+ * PERFORMANCE FIX: Usa ThreadLocal para DecimalFormat ao invés de synchronized,
+ * evitando contenção de threads em ambientes de alta concorrência.
  */
 public class BigDecimalConverter implements Converter<String, BigDecimal> {
 
-	private static final DecimalFormatSymbols SYMBOLS;
-	private static final DecimalFormat FORMAT;
+	// PERFORMANCE FIX: ThreadLocal para evitar sincronização
+	// Cada thread tem sua própria instância de DecimalFormat
+	private static final ThreadLocal<DecimalFormat> FORMAT_THREAD_LOCAL = ThreadLocal.withInitial(() -> {
+		DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("pt", "BR"));
+		symbols.setGroupingSeparator('.');
+		symbols.setDecimalSeparator(',');
 
-	static {
-		SYMBOLS = new DecimalFormatSymbols(new Locale("pt", "BR"));
-		SYMBOLS.setGroupingSeparator('.');
-		SYMBOLS.setDecimalSeparator(',');
-
-		FORMAT = new DecimalFormat("#,##0.00", SYMBOLS);
-		FORMAT.setParseBigDecimal(true);
-	}
+		DecimalFormat format = new DecimalFormat("#,##0.00", symbols);
+		format.setParseBigDecimal(true);
+		return format;
+	});
 
 	@Override
 	public BigDecimal convert(String source) {
@@ -41,10 +41,8 @@ public class BigDecimalConverter implements Converter<String, BigDecimal> {
 		source = source.trim();
 
 		try {
-			// DecimalFormat não é thread-safe, então sincronizamos o acesso
-			synchronized (FORMAT) {
-				return (BigDecimal) FORMAT.parse(source);
-			}
+			// Sem necessidade de sincronização - cada thread tem sua própria instância
+			return (BigDecimal) FORMAT_THREAD_LOCAL.get().parse(source);
 		} catch (ParseException e) {
 			// Se falhar, tenta um fallback manual
 			try {
