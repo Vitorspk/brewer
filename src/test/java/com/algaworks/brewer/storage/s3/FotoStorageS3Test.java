@@ -188,7 +188,7 @@ class FotoStorageS3Test {
 
 		// Then: Should return null without attempting upload
 		assertNull(result);
-		verify(amazonS3, never()).putObject(any(PutObjectRequest.class));
+		verify(amazonS3, never()).putObject(any());
 	}
 
 	@Test
@@ -201,7 +201,7 @@ class FotoStorageS3Test {
 
 		// Then: Should return null without attempting upload
 		assertNull(result);
-		verify(amazonS3, never()).putObject(any(PutObjectRequest.class));
+		verify(amazonS3, never()).putObject(any());
 	}
 
 	// NOTE: Test removed - requires real image processing by Thumbnailator
