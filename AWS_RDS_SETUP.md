@@ -1,245 +1,244 @@
 # AWS RDS MySQL - Configuração do Banco de Dados Brewer
 
+## ⚠️ AVISO DE SEGURANÇA CRÍTICO
+
+**SE VOCÊ ESTÁ VENDO CREDENCIAIS EXPOSTAS NESTE ARQUIVO:**
+1. As credenciais foram comprometidas e devem ser rotacionadas IMEDIATAMENTE
+2. Nunca commite credenciais ou endpoints de produção no repositório
+3. Use variáveis de ambiente e arquivos .env (não versionados)
+
 ## 📊 Informações da Instância RDS
 
-A aplicação Brewer agora utiliza um banco de dados MySQL hospedado na AWS RDS.
+A aplicação Brewer pode utilizar um banco de dados MySQL hospedado na AWS RDS.
 
-### Detalhes da Instância
+### Detalhes Recomendados da Instância
 
-- **Instance ID**: `brewer-db`
-- **Endpoint**: `brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com`
-- **Porta**: `3306`
-- **Engine**: MySQL 8.0.40
-- **Instance Class**: db.t3.micro (1 vCPU, 1GB RAM)
+- **Instance Class**: db.t3.micro (1 vCPU, 1GB RAM) - Free Tier elegível
 - **Storage**: 20GB gp3 (3000 IOPS, 125 MB/s throughput)
-- **Região**: sa-east-1 (São Paulo)
-- **Availability Zone**: sa-east-1a
-- **Publicly Accessible**: Sim
-- **Multi-AZ**: Não (para economia de custos)
-- **Backup Retention**: 7 dias
+- **Engine**: MySQL 8.0.40+
+- **Região**: sa-east-1 (São Paulo) ou us-east-1
+- **Publicly Accessible**: **NÃO** (use VPN/Bastion para acesso externo)
+- **Multi-AZ**: Recomendado para produção
+- **Backup Retention**: 7-30 dias
 
-## 🔐 Credenciais
+## 🔐 Credenciais (NUNCA COMMITE ESTAS INFORMAÇÕES)
 
-As credenciais estão no arquivo `.env.rds` (não versionado):
+As credenciais devem estar **SOMENTE** no arquivo `.env.rds` (listado em .gitignore):
 
 ```bash
-Host: brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com
-Port: 3306
-Username: admin
-Password: BrewerAdmin2024
-Database: brewer
-Test Database: brewer_test (precisa ser criado)
+# .env.rds - NUNCA COMMITE ESTE ARQUIVO
+RDS_HOST=your-rds-endpoint.region.rds.amazonaws.com
+RDS_PORT=3306
+RDS_USER=admin
+RDS_PASSWORD=your-secure-password-here
+RDS_DATABASE=brewer
+RDS_TEST_DATABASE=brewer_test
+```
+
+### Rotação de Credenciais
+
+Se credenciais foram expostas:
+
+```bash
+# 1. Conectar ao RDS via AWS Console ou CLI
+aws rds modify-db-instance \
+  --db-instance-identifier brewer-db \
+  --master-user-password "NEW_SECURE_PASSWORD" \
+  --apply-immediately
+
+# 2. Aguardar aplicação (pode levar alguns minutos)
+aws rds describe-db-instances \
+  --db-instance-identifier brewer-db \
+  --query 'DBInstances[0].DBInstanceStatus'
+
+# 3. Atualizar .env.rds local
+# 4. Atualizar GitHub Actions Secrets
+# 5. Atualizar variáveis de ambiente em produção
 ```
 
 ## 🚀 Uso
 
-### 1. Criar Banco de Testes
-
-O banco principal `brewer` já foi criado automaticamente. Você precisa criar o banco de testes:
-
-```sql
-CREATE DATABASE IF NOT EXISTS brewer_test;
-```
-
-#### Via MySQL Client (se instalado)
+### 1. Criar Instância RDS
 
 ```bash
-mysql -h brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com -u admin -pBrewerAdmin2024 -e "CREATE DATABASE IF NOT EXISTS brewer_test;"
-```
+# Criar security group
+aws ec2 create-security-group \
+  --group-name brewer-rds-sg \
+  --description "Security group for Brewer RDS MySQL" \
+  --vpc-id vpc-xxxxx
 
-#### Via Docker
+# Adicionar regra APENAS para seu IP (NUNCA use 0.0.0.0/0)
+YOUR_IP=$(curl -s https://api.ipify.org)
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 3306 \
+  --cidr ${YOUR_IP}/32
 
-```bash
-docker run -it --rm mysql:8.0 mysql \
-  -h brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com \
-  -u admin \
-  -pBrewerAdmin2024 \
-  -e "CREATE DATABASE IF NOT EXISTS brewer_test;"
-```
+# Criar subnet group
+aws rds create-db-subnet-group \
+  --db-subnet-group-name brewer-subnet-group \
+  --db-subnet-group-description "Subnet group for Brewer DB" \
+  --subnet-ids subnet-xxxxx subnet-yyyyy
 
-### 2. Configurar Application Properties
-
-#### application.properties (Produção)
-
-```properties
-spring.datasource.url=jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false
-spring.datasource.username=admin
-spring.datasource.password=BrewerAdmin2024
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-spring.jpa.hibernate.ddl-auto=none
-spring.flyway.enabled=true
-```
-
-#### application-test.properties (Testes)
-
-```properties
-spring.datasource.url=jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer_test?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false
-spring.datasource.username=admin
-spring.datasource.password=BrewerAdmin2024
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-```
-
-### 3. Usar com Docker Compose
-
-Atualize o `docker-compose.yml` para usar o RDS ao invés do MySQL local:
-
-```yaml
-services:
-  brewer-app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=BrewerAdmin2024
-      - SPRING_PROFILES_ACTIVE=prod
-    # Remover a dependência do MySQL local
-    # depends_on:
-    #   - mysql
-```
-
-### 4. Variáveis de Ambiente para CI/CD
-
-Para uso no GitHub Actions CI:
-
-```yaml
-env:
-  SPRING_DATASOURCE_URL: jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer_test?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false
-  SPRING_DATASOURCE_USERNAME: admin
-  SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-  TEST_DB_URL: jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer_test?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false
-  TEST_DB_USER: admin
-  TEST_DB_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-```
-
-**⚠️ Importante**: Adicione `RDS_PASSWORD` como secret no GitHub:
-- Vá em Settings > Secrets and variables > Actions
-- Adicione: `RDS_PASSWORD` = `BrewerAdmin2024`
-
-## 🛠️ Comandos AWS CLI Úteis
-
-### Verificar Status da Instância
-
-```bash
-aws rds describe-db-instances --db-instance-identifier brewer-db --query 'DBInstances[0].{Status:DBInstanceStatus,Endpoint:Endpoint.Address,Port:Endpoint.Port}'
-```
-
-### Ver Informações Completas
-
-```bash
-aws rds describe-db-instances --db-instance-identifier brewer-db
-```
-
-### Criar Snapshot (Backup Manual)
-
-```bash
-aws rds create-db-snapshot \
+# Criar instância RDS
+aws rds create-db-instance \
   --db-instance-identifier brewer-db \
-  --db-snapshot-identifier brewer-db-snapshot-$(date +%Y%m%d-%H%M%S)
+  --db-instance-class db.t3.micro \
+  --engine mysql \
+  --engine-version 8.0.40 \
+  --master-username admin \
+  --master-user-password "SECURE_PASSWORD_HERE" \
+  --allocated-storage 20 \
+  --storage-type gp3 \
+  --vpc-security-group-ids sg-xxxxx \
+  --db-subnet-group-name brewer-subnet-group \
+  --backup-retention-period 7 \
+  --no-publicly-accessible \
+  --db-name brewer
 ```
 
-### Modificar Instância (exemplo: mudar password)
+### 2. Criar Banco de Testes
+
+Após carregar variáveis de ambiente do `.env.rds`:
 
 ```bash
-aws rds modify-db-instance \
-  --db-instance-identifier brewer-db \
-  --master-user-password NovoPassword123 \
-  --apply-immediately
+# Carregar variáveis
+source .env.rds
+
+# Criar banco de testes
+./scripts/setup-rds-test-db.sh
 ```
 
-### Parar Instância (economia de custos)
+### 3. Configurar Aplicação
+
+#### Local Development (.env)
 
 ```bash
-aws rds stop-db-instance --db-instance-identifier brewer-db
+# .env - para desenvolvimento local
+DATABASE_URL=jdbc:mysql://localhost:3306/brewer?allowPublicKeyRetrieval=true&useSSL=false
+DATABASE_USERNAME=brewer
+DATABASE_PASSWORD=brewer_password
 ```
 
-### Iniciar Instância
+#### Production (.env.rds)
 
 ```bash
-aws rds start-db-instance --db-instance-identifier brewer-db
+# .env.rds - para RDS (NÃO COMMITE)
+DATABASE_URL=jdbc:mysql://${RDS_HOST}:${RDS_PORT}/${RDS_DATABASE}?allowPublicKeyRetrieval=true&useSSL=true&requireSSL=false
+DATABASE_USERNAME=${RDS_USER}
+DATABASE_PASSWORD=${RDS_PASSWORD}
 ```
 
-### Deletar Instância (CUIDADO!)
+#### Docker Compose
 
 ```bash
-# Sem snapshot final
-aws rds delete-db-instance \
-  --db-instance-identifier brewer-db \
-  --skip-final-snapshot
+# Use local MySQL por padrão
+docker-compose up
 
-# Com snapshot final (recomendado)
-aws rds delete-db-instance \
-  --db-instance-identifier brewer-db \
-  --final-db-snapshot-identifier brewer-db-final-snapshot
+# Para usar RDS, crie .env com as credenciais RDS
+cp .env.rds .env
+docker-compose up
+```
+
+### 4. GitHub Actions
+
+Configure os seguintes **Secrets** no repositório (Settings > Secrets and variables > Actions):
+
+```
+DATABASE_URL=jdbc:mysql://endpoint:3306/brewer?...
+DATABASE_USERNAME=admin
+DATABASE_PASSWORD=your-secure-password
+TEST_DB_URL=jdbc:mysql://endpoint:3306/brewer_test?...
+TEST_DB_USER=admin
+TEST_DB_PASSWORD=your-secure-password
 ```
 
 ## 🔒 Segurança
 
-### Security Group
+### Checklist de Segurança
 
-- **ID**: `sg-0cf3cf89d59c0977d`
-- **Nome**: `brewer-rds-sg`
-- **Regras**:
-  - Inbound: TCP 3306 de 0.0.0.0/0 (qualquer IP)
-  - ⚠️ **Para produção**: Restrinja para IPs específicos ou VPC
+- [ ] RDS **não** está publicamente acessível
+- [ ] Security Group permite acesso APENAS de IPs específicos
+- [ ] Senha forte com 20+ caracteres (use gerenciador de senhas)
+- [ ] Credenciais armazenadas em AWS Secrets Manager (recomendado)
+- [ ] Backup automático habilitado
+- [ ] Encryption at rest habilitada
+- [ ] SSL/TLS enforced para conexões
+- [ ] Logs de audit habilitados
+- [ ] Rotação de senha a cada 90 dias
 
-### Subnet Group
+### Restringir Security Group
 
-- **Nome**: `brewer-db-subnet-group`
-- **VPC**: `vpc-51181f36` (default)
-- **Subnets**:
-  - subnet-0fd06069 (sa-east-1a)
-  - subnet-8afe48c3 (sa-east-1b)
-  - subnet-9167d8ca (sa-east-1c)
+```bash
+# Remover acesso público se existir
+aws ec2 revoke-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 3306 \
+  --cidr 0.0.0.0/0
 
-## 💰 Custos Estimados
+# Adicionar APENAS seu IP
+YOUR_IP=$(curl -s https://api.ipify.org)
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 3306 \
+  --cidr ${YOUR_IP}/32
+```
 
-Com a configuração atual (db.t3.micro, 20GB gp3, sa-east-1):
+### Usar AWS Secrets Manager (Recomendado)
 
-- **Instância**: ~$15/mês (750 horas free tier no primeiro ano)
-- **Storage**: ~$2/mês (20GB gp3)
-- **Backup**: Grátis (até 20GB = tamanho da instância)
-- **Transfer**: Variável (dependendo do uso)
+```bash
+# Criar secret
+aws secretsmanager create-secret \
+  --name brewer/rds/credentials \
+  --secret-string '{"username":"admin","password":"SECURE_PASSWORD"}'
 
-**Total estimado**: ~$17/mês (após free tier)
+# Atualizar aplicação para ler do Secrets Manager
+# Adicionar AWS SDK dependency ao pom.xml
+```
 
-## 📝 Notas Importantes
+## 💰 Custos
 
-1. ⚠️ **Segurança**: A instância está acessível publicamente (0.0.0.0/0). Para produção, restrinja o acesso.
-2. 🔄 **Backups**: Configurado para retenção de 7 dias.
-3. 🚀 **Auto Minor Version Upgrade**: Habilitado - a AWS aplicará patches de segurança automaticamente.
-4. 💾 **Storage**: gp3 com 3000 IOPS base e 125 MB/s throughput.
-5. 🌍 **Single-AZ**: Instância em uma única zona de disponibilidade (sem redundância automática).
-6. 🔐 **Credenciais**: Armazenadas no arquivo `.env.rds` (não commitar!).
-7. 📊 **Monitoramento**: CloudWatch metrics habilitado por padrão.
+### Free Tier (12 meses)
+- 750 horas/mês de db.t3.micro
+- 20GB de armazenamento gp3
+- 20GB de backup
 
-## 🆘 Troubleshooting
+### Após Free Tier (estimativa mensal - sa-east-1)
+- db.t3.micro: ~$15/mês
+- Storage (20GB gp3): ~$3/mês
+- Backup adicional (20GB): ~$2/mês
+- **Total estimado: ~$20/mês**
 
-### Erro: "Communications link failure"
+## 🛠️ Troubleshooting
 
-1. Verifique se o security group permite seu IP:
-   ```bash
-   aws ec2 describe-security-groups --group-ids sg-0cf3cf89d59c0977d
-   ```
+### Erro de Conexão
 
-2. Verifique se a instância está rodando:
-   ```bash
-   aws rds describe-db-instances --db-instance-identifier brewer-db --query 'DBInstances[0].DBInstanceStatus'
-   ```
+```bash
+# Verificar status da instância
+aws rds describe-db-instances \
+  --db-instance-identifier brewer-db \
+  --query 'DBInstances[0].[DBInstanceStatus,Endpoint.Address]'
 
-### Erro: "Access denied for user"
+# Testar conectividade
+telnet your-endpoint.rds.amazonaws.com 3306
 
-- Verifique usuário/senha no `.env.rds`
-- Se necessário, reset da senha via AWS CLI (comando acima)
+# Verificar security group
+aws ec2 describe-security-groups \
+  --group-ids sg-xxxxx
+```
 
-### Erro: "Unknown database 'brewer_test'"
+### Erros Comuns
 
-- Crie o banco de testes conforme instruções na seção "Criar Banco de Testes"
+1. **Connection refused**: Verificar security group permite seu IP
+2. **Access denied**: Verificar username/password
+3. **Unknown database**: Criar banco de testes via script
+4. **SSL connection error**: Ajustar parâmetros de conexão
 
 ## 📚 Referências
 
-- [AWS RDS MySQL Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html)
-- [RDS Best Practices](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_BestPractices.html)
-- [RDS Security](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.html)
+- [AWS RDS MySQL Documentation](https://docs.aws.amazon.com/rds/latest/userguide/CHAP_MySQL.html)
+- [AWS Security Best Practices](https://docs.aws.amazon.com/rds/latest/userguide/CHAP_BestPractices.Security.html)
+- [MySQL 8.0 Reference Manual](https://dev.mysql.com/doc/refman/8.0/en/)
