@@ -1,11 +1,14 @@
 package com.algaworks.brewer.repository;
 
+import com.algaworks.brewer.dto.VendaMes;
+import com.algaworks.brewer.dto.VendaOrigem;
 import com.algaworks.brewer.model.Venda;
 import com.algaworks.brewer.repository.filter.VendaFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 public interface VendasQueries {
@@ -19,4 +22,8 @@ public interface VendasQueries {
     BigDecimal valorTotalNoMes();
 
     BigDecimal valorTicketMedioNoAno();
+
+    List<VendaMes> totalPorMes();
+
+    List<VendaOrigem> totalPorOrigem();
 }
