@@ -40,8 +40,10 @@
 		<jasperreports.version>6.21.2</jasperreports.version>
 		<jasperreports-fonts.version>6.21.2</jasperreports-fonts.version>
 
-		<!-- AWS SDK - S3 Storage -->
-		<aws-java-sdk-s3.version>1.12.565</aws-java-sdk-s3.version>
+		<!-- AWS SDK v2 - S3 Storage -->
+		<!-- MIGRATION: Phase 14 - Migrated from AWS SDK v1 (1.12.565) to v2 (2.29.29) -->
+		<!-- Benefits: Better performance, async support, modern API design, active support -->
+		<aws-sdk.version>2.29.29</aws-sdk.version>
 	</properties>
 
 	<dependencies>
@@ -172,11 +174,22 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<!-- AWS SDK - S3 Storage -->
+		<!-- AWS SDK v2 - S3 Storage -->
+		<!-- MIGRATION: Phase 14 - Migrated from v1 to v2 -->
+		<!-- v2 provides: Better performance, async APIs, modern design, active support -->
 		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>${aws-java-sdk-s3.version}</version>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${aws-sdk.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- AWS SDK v2 - URL Connection Client -->
+		<!-- Required for synchronous HTTP operations -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>url-connection-client</artifactId>
+			<version>${aws-sdk.version}</version>
 			<scope>compile</scope>
 		</dependency>
 

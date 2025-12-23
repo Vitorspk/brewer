@@ -15,17 +15,38 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.algaworks.brewer.storage.FotoStorage;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.GroupGrantee;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.Permission;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.util.IOUtils;
 
 import net.coobird.thumbnailator.Thumbnails;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+/**
+ * Implementação de FotoStorage usando AWS S3.
+ *
+ * MIGRATION: Phase 14 - Migrated from AWS SDK v1 to v2
+ *
+ * Key Changes:
+ * - AmazonS3 → S3Client
+ * - PutObjectRequest now uses builder pattern
+ * - ObjectMetadata → PutObjectRequest.Builder contentType/contentLength
+ * - S3Object → ResponseInputStream<GetObjectResponse>
+ * - DeleteObjectsRequest uses builder with Delete object
+ * - getUrl() uses GetUrlRequest builder
+ * - IOUtils replaced with InputStream.readAllBytes()
+ *
+ * Benefits:
+ * - Cleaner, more modern API with builders
+ * - Better resource management
+ * - Improved performance
+ */
 @Profile("prod")
 @Component
 public class FotoStorageS3 implements FotoStorage {
@@ -36,8 +57,8 @@ public class FotoStorageS3 implements FotoStorage {
 	private String bucket;
 
 	@Autowired
-	private AmazonS3 amazonS3;
-	
+	private S3Client s3Client;
+
 	@Override
 	public String salvar(MultipartFile[] files) {
 		String novoNome = null;
@@ -67,9 +88,15 @@ public class FotoStorageS3 implements FotoStorage {
 
 	@Override
 	public byte[] recuperar(String foto) {
-		try (com.amazonaws.services.s3.model.S3Object s3Object = amazonS3.getObject(bucket, foto);
-				InputStream is = s3Object.getObjectContent()) {
-			return IOUtils.toByteArray(is);
+		// AWS SDK v2: Use GetObjectRequest builder
+		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.bucket(bucket)
+				.key(foto)
+				.build();
+
+		try (ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest)) {
+			// AWS SDK v2: Use standard InputStream.readAllBytes() instead of IOUtils
+			return s3Object.readAllBytes();
 		} catch (Exception e) {
 			logger.error("Não foi possível recuperar a foto '{}' do S3.", foto, e);
 			throw new RuntimeException("Erro recuperando foto do S3", e);
@@ -83,28 +110,49 @@ public class FotoStorageS3 implements FotoStorage {
 
 	@Override
 	public void excluir(String foto) {
-		amazonS3.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(foto, THUMBNAIL_PREFIX + foto));
+		// AWS SDK v2: Use builder pattern for DeleteObjectsRequest
+		DeleteObjectsRequest deleteRequest = DeleteObjectsRequest.builder()
+				.bucket(bucket)
+				.delete(Delete.builder()
+						.objects(
+								ObjectIdentifier.builder().key(foto).build(),
+								ObjectIdentifier.builder().key(THUMBNAIL_PREFIX + foto).build()
+						)
+						.build())
+				.build();
+
+		s3Client.deleteObjects(deleteRequest);
 	}
 
 	@Override
 	public String getUrl(String foto) {
-		if (!StringUtils.isEmpty(foto)) {
-			return amazonS3.getUrl(bucket, foto).toString();
+		if (!StringUtils.hasText(foto)) {
+			return null;
 		}
-		return null;
+
+		// AWS SDK v2: Use GetUrlRequest builder
+		GetUrlRequest getUrlRequest = GetUrlRequest.builder()
+				.bucket(bucket)
+				.key(foto)
+				.build();
+
+		return s3Client.utilities().getUrl(getUrlRequest).toString();
 	}
-	
-	private ObjectMetadata enviarFoto(String novoNome, byte[] fileBytes, String contentType)
-			throws IOException {
-		ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentType(contentType);
-		metadata.setContentLength(fileBytes.length);
+
+	private void enviarFoto(String novoNome, byte[] fileBytes, String contentType) throws IOException {
+		// AWS SDK v2: Use PutObjectRequest builder
+		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+				.bucket(bucket)
+				.key(novoNome)
+				.contentType(contentType)
+				.contentLength((long) fileBytes.length)
+				.build();
+
 		// ROBUSTNESS FIX: Use try-with-resources to ensure InputStream is closed
 		try (InputStream is = new ByteArrayInputStream(fileBytes)) {
-			// Private by default - no ACL specified
-			amazonS3.putObject(new PutObjectRequest(bucket, novoNome, is, metadata));
+			// AWS SDK v2: Use RequestBody for upload
+			s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(is, fileBytes.length));
 		}
-		return metadata;
 	}
 
 	private void enviarThumbnail(String novoNome, byte[] fileBytes, String contentType) throws IOException {
@@ -116,11 +164,16 @@ public class FotoStorageS3 implements FotoStorage {
 			byte[] array = os.toByteArray();
 
 			try (InputStream is = new ByteArrayInputStream(array)) {
-				ObjectMetadata thumbMetadata = new ObjectMetadata();
-				thumbMetadata.setContentType(contentType);
-				thumbMetadata.setContentLength(array.length);
-				// Private by default - no ACL specified
-				amazonS3.putObject(new PutObjectRequest(bucket, THUMBNAIL_PREFIX + novoNome, is, thumbMetadata));
+				// AWS SDK v2: Use PutObjectRequest builder
+				PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+						.bucket(bucket)
+						.key(THUMBNAIL_PREFIX + novoNome)
+						.contentType(contentType)
+						.contentLength((long) array.length)
+						.build();
+
+				// AWS SDK v2: Use RequestBody for upload
+				s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(is, array.length));
 			}
 		}
 	}
