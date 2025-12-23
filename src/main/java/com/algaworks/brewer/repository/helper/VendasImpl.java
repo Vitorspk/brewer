@@ -1,5 +1,8 @@
 package com.algaworks.brewer.repository.helper;
 
+import com.algaworks.brewer.dto.VendaMes;
+import com.algaworks.brewer.dto.VendaOrigem;
+import com.algaworks.brewer.model.Origem;
 import com.algaworks.brewer.model.Venda;
 import com.algaworks.brewer.model.StatusVenda;
 import com.algaworks.brewer.repository.VendasQueries;
@@ -21,8 +24,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Repository
@@ -183,5 +188,67 @@ public class VendasImpl implements VendasQueries {
         }
 
         return predicates;
+    }
+
+    @Override
+    public List<VendaMes> totalPorMes() {
+        List<VendaMes> vendasMes = new ArrayList<>();
+
+        LocalDate hoje = LocalDate.now();
+
+        // Obter vendas dos últimos 6 meses
+        for (int i = 5; i >= 0; i--) {
+            YearMonth yearMonth = YearMonth.from(hoje.minusMonths(i));
+            LocalDate inicio = yearMonth.atDay(1);
+            LocalDate fim = yearMonth.atEndOfMonth();
+
+            Integer total = countVendasNoPeriodo(inicio, fim);
+
+            String nomeMes = yearMonth.getMonth()
+                .getDisplayName(TextStyle.SHORT, new Locale("pt", "BR"));
+
+            vendasMes.add(new VendaMes(nomeMes, total));
+        }
+
+        return vendasMes;
+    }
+
+    @Override
+    public List<VendaOrigem> totalPorOrigem() {
+        // Query nativa para buscar total de vendas por origem da cerveja
+        String jpql = "SELECT c.origem, COUNT(v) " +
+                     "FROM Venda v " +
+                     "JOIN v.itens i " +
+                     "JOIN i.cerveja c " +
+                     "WHERE v.status = :status " +
+                     "GROUP BY c.origem";
+
+        List<Object[]> resultado = manager.createQuery(jpql, Object[].class)
+            .setParameter("status", StatusVenda.EMITIDA)
+            .getResultList();
+
+        List<VendaOrigem> vendasOrigem = new ArrayList<>();
+        for (Object[] row : resultado) {
+            Origem origem = (Origem) row[0];
+            Long total = (Long) row[1];
+            vendasOrigem.add(new VendaOrigem(origem.getDescricao(), total.intValue()));
+        }
+
+        return vendasOrigem;
+    }
+
+    private Integer countVendasNoPeriodo(LocalDate inicio, LocalDate fim) {
+        CriteriaBuilder builder = manager.getCriteriaBuilder();
+        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
+        Root<Venda> root = criteria.from(Venda.class);
+
+        criteria.select(builder.count(root));
+        criteria.where(
+            builder.between(root.get("dataCriacao"), inicio, fim),
+            builder.equal(root.get("status"), StatusVenda.EMITIDA)
+        );
+
+        Long count = manager.createQuery(criteria).getSingleResult();
+        return count != null ? count.intValue() : 0;
     }
 }
