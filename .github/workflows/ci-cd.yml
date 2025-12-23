@@ -139,6 +139,10 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
+          timeout: '10m'
+          scanners: 'vuln,secret,config'
+          skip-dirs: 'target/'
+          severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
