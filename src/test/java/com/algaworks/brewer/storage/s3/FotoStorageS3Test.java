@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -44,8 +46,13 @@ import static org.mockito.Mockito.*;
  * - InputStreams are properly closed with try-with-resources
  * - No connection pool exhaustion under load
  * - Error handling doesn't leak resources
+ *
+ * NOTE: Using LENIENT strictness because setUp() mocks s3Client.utilities()
+ * which is only needed by some tests (getUrl tests). This is acceptable as
+ * the mock is harmless for tests that don't use it.
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class FotoStorageS3Test {
 
 	@Mock
