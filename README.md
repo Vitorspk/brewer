@@ -1,6 +1,6 @@
 # Brewer - Brewery Management System
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/)
+[![Java](https://img.shields.io/badge/Java-21_LTS-orange.svg)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -49,7 +49,7 @@ A comprehensive brewery management system built with modern Java technologies. T
 ## 🛠 Technology Stack
 
 ### Backend
-- **Java 17 LTS** - Modern Java with Records, Pattern Matching, Text Blocks
+- **Java 21 LTS** - Latest LTS with Virtual Threads, Pattern Matching for switch, Records
 - **Spring Boot 3.2.1** - Application framework with auto-configuration
 - **Spring Framework 6.1.1** - Core framework
 - **Spring Security 6.2.x** - Authentication and authorization
@@ -85,10 +85,13 @@ A comprehensive brewery management system built with modern Java technologies. T
 ## 📦 Prerequisites
 
 ### Required
-- **Java 17 LTS** or higher
+- **Java 21 LTS** (Required for Mockito compatibility)
   ```bash
-  java -version  # Should show 17 or higher
+  java -version  # Should show 21.x.x
   ```
+
+  > ⚠️ **Important**: Java 25 has known incompatibilities with Mockito that cause test failures.
+  > See [JAVA_21_INSTALLATION.md](JAVA_21_INSTALLATION.md) for installation instructions.
 - **Maven 3.8+**
   ```bash
   mvn -version
@@ -537,10 +540,11 @@ This project has undergone a complete modernization from legacy technologies to 
 - **Jackson**: 2.8.8 → 2.13.3
 - **MySQL Connector**: 5.1.42 → 8.0.31
 
-#### Phase 2: Java 17 LTS ✅
-- **Java**: 8 → 17 LTS
-- Enabled modern Java features (Records, Pattern Matching, Text Blocks)
+#### Phase 2: Java 21 LTS ✅
+- **Java**: 8 → 21 LTS
+- Enabled modern Java features (Records, Pattern Matching, Text Blocks, Virtual Threads)
 - Performance improvements (30-40% in some scenarios)
+- **Important**: Java 21 required for Mockito compatibility (Java 25 has known test failures)
 
 #### Phase 3: Spring Boot 2.7 ✅
 - Introduced Spring Boot for the first time
@@ -566,7 +570,7 @@ This project has undergone a complete modernization from legacy technologies to 
 
 | Component | Before (2017) | After (2025) | Support Until |
 |-----------|---------------|--------------|---------------|
-| Java | 8 (2014) | 17 LTS (2021) | Sep 2029 |
+| Java | 8 (2014) | 21 LTS (2023) | Sep 2029 |
 | Spring Boot | None | 3.2.1 (2023) | 2025+ |
 | Spring Framework | 4.3.8 (2017) | 6.1.1 (2023) | Active |
 | Hibernate | 5.2.11 (2017) | 6.4.1 (2023) | Active |
@@ -619,7 +623,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👥 Authors
 
 - **AlgaWorks** - Original application development
-- **Migration Team** - Modernization to Spring Boot 3 + Java 17
+- **Migration Team** - Modernization to Spring Boot 3 + Java 21 LTS
 
 ## 🙏 Acknowledgments
 
@@ -637,6 +641,6 @@ For issues, questions, or contributions:
 
 ---
 
-**Built with ❤️ using Spring Boot 3 and Java 17**
+**Built with ❤️ using Spring Boot 3 and Java 21 LTS**
 
 *Last Updated: December 2025*

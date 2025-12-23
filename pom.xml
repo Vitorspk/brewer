@@ -24,8 +24,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- ATUALIZADO FASE 2 - Java 17 LTS -->
-		<java.version>17</java.version>
+		<!-- ATUALIZADO - Java 21 LTS (para compatibilidade com Mockito e testes) -->
+		<!-- Java 25 tem problemas conhecidos com Mockito que causam falhas nos testes -->
+		<java.version>21</java.version>
 
 		<!-- thumbnailator - Gerar thumbmail -->
 		<!-- https://github.com/coobird/thumbnailator -->
