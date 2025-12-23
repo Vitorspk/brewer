@@ -172,7 +172,7 @@ class FotoStorageS3Test {
 
 		// Then: Should return null
 		assertNull(url);
-		verify(s3Utilities, never()).getUrl(any());
+		verify(s3Utilities, never()).getUrl(any(GetUrlRequest.class));
 	}
 
 	@Test
@@ -185,7 +185,7 @@ class FotoStorageS3Test {
 
 		// Then: Should return null
 		assertNull(url);
-		verify(s3Utilities, never()).getUrl(any());
+		verify(s3Utilities, never()).getUrl(any(GetUrlRequest.class));
 	}
 
 	@Test

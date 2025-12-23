@@ -97,9 +97,22 @@ public class FotoStorageS3 implements FotoStorage {
 		try (ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest)) {
 			// AWS SDK v2: Use standard InputStream.readAllBytes() instead of IOUtils
 			return s3Object.readAllBytes();
+		} catch (software.amazon.awssdk.services.s3.model.S3Exception e) {
+			// ERROR HANDLING IMPROVEMENT: Phase 14 Post-Review
+			// Catch S3Exception specifically to expose AWS error codes for better debugging
+			logger.error("S3 error recuperando foto '{}': {} (ErrorCode: {}, StatusCode: {})",
+					foto, e.awsErrorDetails().errorMessage(),
+					e.awsErrorDetails().errorCode(), e.statusCode(), e);
+			throw new RuntimeException(
+					String.format("Erro recuperando foto do S3: %s (Código: %s)",
+							e.awsErrorDetails().errorMessage(),
+							e.awsErrorDetails().errorCode()), e);
+		} catch (IOException e) {
+			logger.error("IO error lendo foto '{}' do S3", foto, e);
+			throw new RuntimeException("Erro lendo foto do S3", e);
 		} catch (Exception e) {
-			logger.error("Não foi possível recuperar a foto '{}' do S3.", foto, e);
-			throw new RuntimeException("Erro recuperando foto do S3", e);
+			logger.error("Erro inesperado recuperando foto '{}' do S3", foto, e);
+			throw new RuntimeException("Erro inesperado recuperando foto do S3", e);
 		}
 	}
 
