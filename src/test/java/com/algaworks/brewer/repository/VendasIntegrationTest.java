@@ -81,7 +81,7 @@ class VendasIntegrationTest extends BaseRepositoryIntegrationTest {
 		cliente = new Cliente();
 		cliente.setNome("Cliente Teste");
 		cliente.setTipoPessoa(TipoPessoa.FISICA);
-		cliente.setCpfOuCnpj("34608514090"); // CPF válido para testes
+		cliente.setCpfOuCnpj("11144477735"); // CPF válido para testes
 		cliente.setEmail("cliente@teste.com");
 
 		Endereco endereco = new Endereco();
@@ -99,8 +99,8 @@ class VendasIntegrationTest extends BaseRepositoryIntegrationTest {
 		estilo = entityManager.persistAndFlush(estilo);
 
 		// Criar cervejas de teste
-		cervejaNacional = criarCerveja("BR001", "Brahma", estilo, Origem.NACIONAL, new BigDecimal("5.00"));
-		cervejaInternacional = criarCerveja("HN001", "Heineken", estilo, Origem.INTERNACIONAL, new BigDecimal("8.00"));
+		cervejaNacional = criarCerveja("BR0001", "Brahma", estilo, Origem.NACIONAL, new BigDecimal("5.00"));
+		cervejaInternacional = criarCerveja("HN0001", "Heineken", estilo, Origem.INTERNACIONAL, new BigDecimal("8.00"));
 	}
 
 	@Test
