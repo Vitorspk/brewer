@@ -13,6 +13,7 @@ import com.algaworks.brewer.model.StatusVenda;
 import com.algaworks.brewer.model.Usuario;
 import com.algaworks.brewer.model.Venda;
 import com.algaworks.brewer.repository.Vendas;
+import com.algaworks.brewer.security.Permissoes;
 import com.algaworks.brewer.service.exception.ImpossivelEmitirVendaException;
 
 @Service
@@ -47,7 +48,7 @@ public class CadastroVendaService {
 
 		boolean temPermissao = usuarioLogado.getGrupos().stream()
 				.flatMap(grupo -> grupo.getPermissoes().stream())
-				.anyMatch(permissao -> "ROLE_EMITIR_VENDA".equals(permissao.getNome()));
+				.anyMatch(permissao -> Permissoes.EMITIR_VENDA.equals(permissao.getNome()));
 
 		if (!isProprietario && !temPermissao) {
 			throw new AccessDeniedException("Você não tem permissão para emitir esta venda");
@@ -81,7 +82,7 @@ public class CadastroVendaService {
 
 		boolean temPermissao = usuarioLogado.getGrupos().stream()
 				.flatMap(grupo -> grupo.getPermissoes().stream())
-				.anyMatch(permissao -> "ROLE_CANCELAR_VENDA".equals(permissao.getNome()));
+				.anyMatch(permissao -> Permissoes.CANCELAR_VENDA.equals(permissao.getNome()));
 
 		if (!isProprietario && !temPermissao) {
 			throw new AccessDeniedException("Você não tem permissão para cancelar esta venda");

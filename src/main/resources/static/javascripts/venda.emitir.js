@@ -50,9 +50,20 @@ Brewer.EmitirVenda = (function() {
 		});
 	}
 
-	function onErroEmitir(e) {
-		console.log('Erro ao emitir venda', e);
-		swal('Erro!', 'Não foi possível emitir a venda. Tente novamente.', 'error');
+	function onErroEmitir(xhr) {
+		console.error('Erro ao emitir venda', xhr);
+
+		var mensagem = 'Não foi possível emitir a venda. Tente novamente.';
+
+		if (xhr.status === 403) {
+			mensagem = 'Você não tem permissão para emitir esta venda.';
+		} else if (xhr.status === 400 && xhr.responseText) {
+			mensagem = xhr.responseText;
+		} else if (xhr.status === 404) {
+			mensagem = 'Venda não encontrada.';
+		}
+
+		swal('Erro!', mensagem, 'error');
 	}
 
 	return EmitirVenda;
