@@ -13,7 +13,7 @@ Brewer.Autocomplete = (function() {
 	Autocomplete.prototype.iniciar = function() {
 		var options = {
 			url: function(skuOuNome) {
-				return '/brewer/cervejas?skuOuNome=' + skuOuNome;
+				return '/cervejas?skuOuNome=' + skuOuNome;
 			},
 			getValue: 'nome',
 			minCharNumber: 3,

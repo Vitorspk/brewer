@@ -15,6 +15,8 @@ public class VendaFilter {
 	private BigDecimal valorMaximo;
 	private String nomeCliente;
 	private String cpfOuCnpjCliente;
+	private LocalDate dataCriacaoInicio;
+	private LocalDate dataCriacaoFim;
 
 	public Long getCodigo() {
 		return codigo;
@@ -78,6 +80,22 @@ public class VendaFilter {
 
 	public void setCpfOuCnpjCliente(String cpfOuCnpjCliente) {
 		this.cpfOuCnpjCliente = cpfOuCnpjCliente;
+	}
+
+	public LocalDate getDataCriacaoInicio() {
+		return dataCriacaoInicio;
+	}
+
+	public void setDataCriacaoInicio(LocalDate dataCriacaoInicio) {
+		this.dataCriacaoInicio = dataCriacaoInicio;
+	}
+
+	public LocalDate getDataCriacaoFim() {
+		return dataCriacaoFim;
+	}
+
+	public void setDataCriacaoFim(LocalDate dataCriacaoFim) {
+		this.dataCriacaoFim = dataCriacaoFim;
 	}
 
 }

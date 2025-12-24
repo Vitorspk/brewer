@@ -13,6 +13,7 @@ import com.algaworks.brewer.model.StatusVenda;
 import com.algaworks.brewer.model.Usuario;
 import com.algaworks.brewer.model.Venda;
 import com.algaworks.brewer.repository.Vendas;
+import com.algaworks.brewer.security.Permissoes;
 import com.algaworks.brewer.service.exception.ImpossivelEmitirVendaException;
 
 @Service
@@ -35,9 +36,23 @@ public class CadastroVendaService {
 	}
 
 	@Transactional
-	public void emitir(Venda venda) {
-		venda = vendas.findById(venda.getCodigo())
+	public void emitir(Venda vendaParam, Usuario usuarioLogado) {
+		// Carregar venda do banco para ter o usuario carregado
+		Venda venda = vendas.findById(vendaParam.getCodigo())
 				.orElseThrow(() -> new IllegalArgumentException("Venda não encontrada"));
+
+		// Verificar autorização manualmente (SECURITY FIX)
+		// Usuário só pode emitir vendas próprias OU ter a permissão EMITIR_VENDA
+		boolean isProprietario = venda.getUsuario() != null &&
+				venda.getUsuario().getCodigo().equals(usuarioLogado.getCodigo());
+
+		boolean temPermissao = usuarioLogado.getGrupos().stream()
+				.flatMap(grupo -> grupo.getPermissoes().stream())
+				.anyMatch(permissao -> Permissoes.EMITIR_VENDA.equals(permissao.getNome()));
+
+		if (!isProprietario && !temPermissao) {
+			throw new AccessDeniedException("Você não tem permissão para emitir esta venda");
+		}
 
 		if (venda.isCancelada()) {
 			throw new ImpossivelEmitirVendaException("Não é possível emitir uma venda cancelada");
@@ -67,7 +82,7 @@ public class CadastroVendaService {
 
 		boolean temPermissao = usuarioLogado.getGrupos().stream()
 				.flatMap(grupo -> grupo.getPermissoes().stream())
-				.anyMatch(permissao -> "ROLE_CANCELAR_VENDA".equals(permissao.getNome()));
+				.anyMatch(permissao -> Permissoes.CANCELAR_VENDA.equals(permissao.getNome()));
 
 		if (!isProprietario && !temPermissao) {
 			throw new AccessDeniedException("Você não tem permissão para cancelar esta venda");

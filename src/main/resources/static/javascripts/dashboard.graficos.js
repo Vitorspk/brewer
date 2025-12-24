@@ -12,7 +12,10 @@ Brewer.GraficoVendasPorMes = (function() {
 		$.ajax({
 			url: url,
 			method: 'GET',
-			success: onDadosRecebidos.bind(this)
+			success: onDadosRecebidos.bind(this),
+			error: function(xhr, status, error) {
+				console.error('Erro ao carregar vendas por mês:', error);
+			}
 		});
 	}
 
@@ -82,7 +85,10 @@ Brewer.GraficoVendasPorOrigem = (function() {
 		$.ajax({
 			url: url,
 			method: 'GET',
-			success: onDadosRecebidos.bind(this)
+			success: onDadosRecebidos.bind(this),
+			error: function(xhr, status, error) {
+				console.error('Erro ao carregar vendas por origem:', error);
+			}
 		});
 	}
 

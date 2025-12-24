@@ -163,6 +163,36 @@
 	text-align: center;
 }
 
+/* Colunas - Pesquisa de vendas */
+.table-vendas-col-codigo {
+	width: 80px;
+	text-align: center;
+}
+
+.table-vendas-col-data-criacao {
+	width: 120px;
+	text-align: center;
+}
+
+.table-vendas-col-cliente {
+
+}
+
+.table-vendas-col-valor-total {
+	width: 120px;
+	text-align: right;
+}
+
+.table-vendas-col-status {
+	width: 100px;
+	text-align: center;
+}
+
+.table-vendas-col-acoes {
+	width: 80px;
+	text-align: center;
+}
+
 /* Tabela Cervejas página de Venda */
 .bw-tabela-cervejas {
 	margin-bottom: 15px;
