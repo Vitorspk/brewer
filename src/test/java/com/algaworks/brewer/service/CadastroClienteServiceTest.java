@@ -174,4 +174,47 @@ class CadastroClienteServiceTest {
 
 		verify(clientes, never()).save(any());
 	}
+
+	@Test
+	@DisplayName("Deve lançar exceção quando novo cliente (codigo=null) tenta usar CPF duplicado")
+	void deveLancarExcecaoQuandoNovoClienteComCodigoNuloTentaUsarCpfDuplicado() {
+		// Given - Novo cliente com código null (ainda não persistido)
+		Cliente novoClienteComCodigoNull = new Cliente();
+		novoClienteComCodigoNull.setCodigo(null); // Explicitamente null
+		novoClienteComCodigoNull.setNome("Cliente Novo");
+		novoClienteComCodigoNull.setTipoPessoa(TipoPessoa.FISICA);
+		novoClienteComCodigoNull.setCpfOuCnpj("11144477735");
+		novoClienteComCodigoNull.setEmail("novo@teste.com");
+
+		// CPF já existe no banco
+		when(clientes.findByCpfOuCnpj("11144477735")).thenReturn(Optional.of(clienteExistente));
+
+		// When & Then
+		assertThatThrownBy(() -> service.salvar(novoClienteComCodigoNull))
+			.isInstanceOf(CpfCnpjClienteJaCadastradoException.class)
+			.hasMessage("CPF/CNPJ já cadastrado");
+
+		verify(clientes, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("Deve salvar cliente quando codigo é null e CPF é único (novo cliente)")
+	void deveSalvarClienteQuandoCodigoNuloECpfUnico() {
+		// Given - Novo cliente com código null
+		Cliente novoClienteComCodigoNull = new Cliente();
+		novoClienteComCodigoNull.setCodigo(null);
+		novoClienteComCodigoNull.setNome("Cliente Novo");
+		novoClienteComCodigoNull.setTipoPessoa(TipoPessoa.FISICA);
+		novoClienteComCodigoNull.setCpfOuCnpj("98765432100");
+		novoClienteComCodigoNull.setEmail("novo@teste.com");
+
+		// CPF não existe no banco
+		when(clientes.findByCpfOuCnpj("98765432100")).thenReturn(Optional.empty());
+
+		// When
+		service.salvar(novoClienteComCodigoNull);
+
+		// Then - Deve salvar normalmente
+		verify(clientes).save(novoClienteComCodigoNull);
+	}
 }

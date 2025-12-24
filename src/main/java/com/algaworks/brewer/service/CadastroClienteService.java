@@ -25,7 +25,8 @@ public class CadastroClienteService {
 		if (clienteExistente.isPresent()) {
 			Cliente existente = clienteExistente.get();
 			// Verifica se é um cliente diferente (não é o mesmo cliente sendo editado)
-			if (!existente.getCodigo().equals(cliente.getCodigo())) {
+			// Se o cliente sendo salvo tem código null, é um novo cliente
+			if (cliente.getCodigo() == null || !existente.getCodigo().equals(cliente.getCodigo())) {
 				throw new CpfCnpjClienteJaCadastradoException("CPF/CNPJ já cadastrado");
 			}
 		}
