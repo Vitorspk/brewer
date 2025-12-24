@@ -22,8 +22,12 @@ public class CadastroClienteService {
 	@Transactional
 	public void salvar(Cliente cliente) {
 		Optional<Cliente> clienteExistente = clientes.findByCpfOuCnpj(cliente.getCpfOuCnpjSemFormatacao());
-		if (clienteExistente.isPresent() && !clienteExistente.get().equals(cliente)) {
-			throw new CpfCnpjClienteJaCadastradoException("CPF/CNPJ já cadastrado");
+		if (clienteExistente.isPresent()) {
+			Cliente existente = clienteExistente.get();
+			// Verifica se é um cliente diferente (não é o mesmo cliente sendo editado)
+			if (!existente.getCodigo().equals(cliente.getCodigo())) {
+				throw new CpfCnpjClienteJaCadastradoException("CPF/CNPJ já cadastrado");
+			}
 		}
 
 		clientes.save(cliente);
