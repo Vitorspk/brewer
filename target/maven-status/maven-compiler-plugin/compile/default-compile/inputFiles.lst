@@ -44,11 +44,13 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/storage/local/FotoStorageLocal.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/service/StatusUsuario.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/Cervejas.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/dto/VendaOrigem.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/config/S3Config.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/service/event/cerveja/CervejaSalvaEvent.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Sabor.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Cidade.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/validation/AtributoConfirmacao.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/dto/VendaMes.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Estado.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/storage/FotoStorage.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/filter/EstiloFilter.java
