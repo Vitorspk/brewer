@@ -111,7 +111,7 @@ public class VendasController {
 		// CODE QUALITY FIX: Phase 12 - Medium Priority Issue #3
 		// Extracted common logic to processarVenda() to avoid duplication
 		return processarVenda(venda, result, attributes, usuarioSistema,
-			() -> cadastroVendaService.emitir(venda),
+			() -> cadastroVendaService.emitir(venda, usuarioSistema.getUsuario()),
 			"Venda emitida com sucesso");
 	}
 
