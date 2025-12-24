@@ -35,9 +35,23 @@ public class CadastroVendaService {
 	}
 
 	@Transactional
-	public void emitir(Venda venda) {
-		venda = vendas.findById(venda.getCodigo())
+	public void emitir(Venda vendaParam, Usuario usuarioLogado) {
+		// Carregar venda do banco para ter o usuario carregado
+		Venda venda = vendas.findById(vendaParam.getCodigo())
 				.orElseThrow(() -> new IllegalArgumentException("Venda não encontrada"));
+
+		// Verificar autorização manualmente (SECURITY FIX)
+		// Usuário só pode emitir vendas próprias OU ter a permissão EMITIR_VENDA
+		boolean isProprietario = venda.getUsuario() != null &&
+				venda.getUsuario().getCodigo().equals(usuarioLogado.getCodigo());
+
+		boolean temPermissao = usuarioLogado.getGrupos().stream()
+				.flatMap(grupo -> grupo.getPermissoes().stream())
+				.anyMatch(permissao -> "ROLE_EMITIR_VENDA".equals(permissao.getNome()));
+
+		if (!isProprietario && !temPermissao) {
+			throw new AccessDeniedException("Você não tem permissão para emitir esta venda");
+		}
 
 		if (venda.isCancelada()) {
 			throw new ImpossivelEmitirVendaException("Não é possível emitir uma venda cancelada");

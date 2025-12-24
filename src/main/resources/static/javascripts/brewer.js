@@ -79,24 +79,26 @@ Brewer.MaskTime = (function() {
 		this.inputTime = $('.js-time');
 	}
 
+	function correctTimeValue(field) {
+		var val = field.val();
+		if (val.length === 5) {
+			var parts = val.split(':');
+			var hour = parseInt(parts[0]);
+			var minute = parseInt(parts[1]);
+
+			if (hour > 23) {
+				field.val('23:' + (parts[1] || '00'));
+			}
+			if (minute > 59) {
+				field.val(parts[0] + ':59');
+			}
+		}
+	}
+
 	MaskTime.prototype.enable = function() {
 		var options = {
 			onKeyPress: function(val, e, field, options) {
-				// Valida se a hora está entre 00-23 e os minutos entre 00-59
-				var parts = val.split(':');
-				if (parts.length === 2) {
-					var hour = parseInt(parts[0]);
-					var minute = parseInt(parts[1]);
-
-					// Corrige hora se maior que 23
-					if (hour > 23) {
-						field.val('23:' + (parts[1] || '00'));
-					}
-					// Corrige minuto se maior que 59
-					if (minute > 59) {
-						field.val(parts[0] + ':59');
-					}
-				}
+				correctTimeValue(field);
 			}
 		};
 
@@ -104,19 +106,7 @@ Brewer.MaskTime = (function() {
 
 		// Validação ao sair do campo
 		this.inputTime.blur(function() {
-			var val = $(this).val();
-			if (val.length === 5) {
-				var parts = val.split(':');
-				var hour = parseInt(parts[0]);
-				var minute = parseInt(parts[1]);
-
-				if (hour > 23) {
-					$(this).val('23:' + parts[1]);
-				}
-				if (minute > 59) {
-					$(this).val(parts[0] + ':59');
-				}
-			}
+			correctTimeValue($(this));
 		});
 	}
 

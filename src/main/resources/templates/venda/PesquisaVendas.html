@@ -135,7 +135,7 @@
 							</a>
 							<a class="btn  btn-link  btn-xs  js-tooltip" title="Cancelar"
 								th:if="${venda.status.name() == 'EMITIDA'}"
-								data:codigo="${venda.codigo}">
+								th:data-codigo="${venda.codigo}">
 								<i class="glyphicon glyphicon-remove"></i>
 							</a>
 						</td>

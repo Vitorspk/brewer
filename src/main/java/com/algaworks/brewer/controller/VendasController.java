@@ -43,6 +43,7 @@ import com.algaworks.brewer.repository.Vendas;
 import com.algaworks.brewer.repository.filter.VendaFilter;
 import com.algaworks.brewer.security.UsuarioSistema;
 import com.algaworks.brewer.service.CadastroVendaService;
+import com.algaworks.brewer.service.exception.ImpossivelEmitirVendaException;
 import com.algaworks.brewer.session.TabelaItensVenda;
 
 @Controller
@@ -182,14 +183,17 @@ public class VendasController {
 
 	@PostMapping("/{codigo}/emitir")
 	@ResponseBody
-	public String emitirVenda(@PathVariable Long codigo) {
+	public String emitirVenda(@PathVariable Long codigo,
+			@AuthenticationPrincipal UsuarioSistema usuarioSistema) {
 		try {
 			Venda venda = vendas.findById(codigo)
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venda não encontrada"));
 
-			cadastroVendaService.emitir(venda);
+			cadastroVendaService.emitir(venda, usuarioSistema.getUsuario());
 			return "OK";
-		} catch (Exception e) {
+		} catch (AccessDeniedException e) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+		} catch (ImpossivelEmitirVendaException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 	}
