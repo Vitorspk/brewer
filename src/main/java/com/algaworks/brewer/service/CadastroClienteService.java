@@ -1,5 +1,6 @@
 package com.algaworks.brewer.service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import jakarta.persistence.PersistenceException;
@@ -25,8 +26,8 @@ public class CadastroClienteService {
 		if (clienteExistente.isPresent()) {
 			Cliente existente = clienteExistente.get();
 			// Verifica se é um cliente diferente (não é o mesmo cliente sendo editado)
-			// Se o cliente sendo salvo tem código null, é um novo cliente
-			if (cliente.getCodigo() == null || !existente.getCodigo().equals(cliente.getCodigo())) {
+			// Objects.equals() é null-safe: trata corretamente novos clientes (codigo=null)
+			if (!Objects.equals(existente.getCodigo(), cliente.getCodigo())) {
 				throw new CpfCnpjClienteJaCadastradoException("CPF/CNPJ já cadastrado");
 			}
 		}
