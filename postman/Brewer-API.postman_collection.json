@@ -359,21 +359,43 @@
 					"name": "Create Customer (Individual - CPF)",
 					"event": [
 						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate valid random CPF for idempotent tests",
+									"function geraCPF() {",
+									"    const randomDigit = () => Math.floor(Math.random() * 10);",
+									"    const digits = Array.from({ length: 9 }, randomDigit);",
+									"    ",
+									"    const calcVerifier = (arr) => {",
+									"        const sum = arr.reduce((acc, digit, index) => acc + digit * (arr.length + 1 - index), 0);",
+									"        const rest = sum % 11;",
+									"        return rest < 2 ? 0 : 11 - rest;",
+									"    };",
+									"    ",
+									"    const d1 = calcVerifier(digits);",
+									"    digits.push(d1);",
+									"    ",
+									"    const d2 = calcVerifier(digits);",
+									"    digits.push(d2);",
+									"    ",
+									"    return digits.join('');",
+									"}",
+									"",
+									"const randomCpf = geraCPF();",
+									"pm.environment.set('random_cpf', randomCpf);",
+									"console.log('Generated CPF for test:', randomCpf);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200 or 302\", function () {",
 									"    pm.expect([200, 302]).to.include(pm.response.code);",
-									"});",
-									"",
-									"// Save customer ID if created successfully",
-									"if (pm.response.code === 302) {",
-									"    const location = pm.response.headers.get('Location');",
-									"    if (location && location.includes('clientes')) {",
-									"        // Extract ID from redirect URL if possible",
-									"        pm.environment.set('last_customer_created', 'CPF-' + Date.now());",
-									"    }",
-									"}"
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -402,9 +424,9 @@
 								},
 								{
 									"key": "cpfOuCnpj",
-									"value": "11144477735",
+									"value": "{{random_cpf}}",
 									"type": "text",
-									"description": "Valid CPF (11 digits with valid check digits)"
+									"description": "Valid random CPF generated in pre-request (idempotent)"
 								},
 								{
 									"key": "email",
@@ -430,6 +452,42 @@
 				{
 					"name": "Create Customer (Company - CNPJ)",
 					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate valid random CNPJ for idempotent tests",
+									"function geraCNPJ() {",
+									"    const randomDigit = () => Math.floor(Math.random() * 10);",
+									"    // 8 random digits + branch 0001",
+									"    const digits = [...Array.from({ length: 8 }, randomDigit), 0, 0, 0, 1];",
+									"    ",
+									"    const calcVerifier = (arr, weights) => {",
+									"        const sum = arr.reduce((acc, digit, index) => acc + digit * weights[index], 0);",
+									"        const rest = sum % 11;",
+									"        return rest < 2 ? 0 : 11 - rest;",
+									"    };",
+									"    ",
+									"    // First verifier: weights [5,4,3,2,9,8,7,6,5,4,3,2]",
+									"    const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];",
+									"    const d1 = calcVerifier(digits, weights1);",
+									"    digits.push(d1);",
+									"    ",
+									"    // Second verifier: weights [6,5,4,3,2,9,8,7,6,5,4,3,2]",
+									"    const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];",
+									"    const d2 = calcVerifier(digits, weights2);",
+									"    digits.push(d2);",
+									"    ",
+									"    return digits.join('');",
+									"}",
+									"",
+									"const randomCnpj = geraCNPJ();",
+									"pm.environment.set('random_cnpj', randomCnpj);",
+									"console.log('Generated CNPJ for test:', randomCnpj);"
+								],
+								"type": "text/javascript"
+							}
+						},
 						{
 							"listen": "test",
 							"script": {
@@ -465,9 +523,9 @@
 								},
 								{
 									"key": "cpfOuCnpj",
-									"value": "11222333000181",
+									"value": "{{random_cnpj}}",
 									"type": "text",
-									"description": "Valid CNPJ (14 digits with valid check digits)"
+									"description": "Valid random CNPJ generated in pre-request (idempotent)"
 								},
 								{
 									"key": "email",
@@ -532,9 +590,9 @@
 								},
 								{
 									"key": "cpfOuCnpj",
-									"value": "11144477735",
+									"value": "{{random_cpf}}",
 									"type": "text",
-									"description": "Same CPF as previous test - should fail"
+									"description": "Same CPF as previous test - should fail (uses random_cpf from environment)"
 								},
 								{
 									"key": "email",
@@ -1351,9 +1409,8 @@
 									"});",
 									"",
 									"pm.test(\"Response indicates validation error\", function () {",
-									"    // Spring returns HTML error page or JSON depending on Accept header",
 									"    const responseText = pm.response.text();",
-									"    pm.expect(responseText.length).to.be.above(0);",
+									"    pm.expect(responseText).to.match(/Bad Request|dataInicio|dataFim/, 'Response must contain validation error details');",
 									"});"
 								],
 								"type": "text/javascript"
