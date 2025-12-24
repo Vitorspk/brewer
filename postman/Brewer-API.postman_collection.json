@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "brewer-api-collection",
 		"name": "Brewer API - Complete Test Suite",
-		"description": "Complete API test collection for Brewer Brewery Management System.\n\nIncludes:\n- Authentication & Session Management\n- CRUD operations for Beers, Customers, Users, Cities, Styles\n- Search and Filter operations\n- Spring Boot Actuator endpoints\n- Automated test scripts\n\nVersion: 1.0.0\nAuthor: Brewer Team",
+		"description": "Complete API test collection for Brewer Brewery Management System.\n\nIncludes:\n- Authentication & Session Management\n- CRUD operations for Beers, Customers, Users, Cities, Styles\n- Dashboard with sales charts (by month and origin)\n- Sales Reports (PDF generation)\n- Search and Filter operations\n- Customer CPF/CNPJ duplicate validation tests\n- Spring Boot Actuator endpoints\n- Automated test scripts with comprehensive assertions\n\nRecent Updates:\n- Added Dashboard & Sales endpoints (totalPorMes, totalPorOrigem)\n- Added Sales Reports endpoint with PDF generation\n- Added test for CPF/CNPJ duplicate validation bug fix\n- Enhanced test coverage for all new features\n\nVersion: 2.0.0\nAuthor: Brewer Team",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {
@@ -364,7 +364,16 @@
 								"exec": [
 									"pm.test(\"Status code is 200 or 302\", function () {",
 									"    pm.expect([200, 302]).to.include(pm.response.code);",
-									"});"
+									"});",
+									"",
+									"// Save customer ID if created successfully",
+									"if (pm.response.code === 302) {",
+									"    const location = pm.response.headers.get('Location');",
+									"    if (location && location.includes('clientes')) {",
+									"        // Extract ID from redirect URL if possible",
+									"        pm.environment.set('last_customer_created', 'CPF-' + Date.now());",
+									"    }",
+									"}"
 								],
 								"type": "text/javascript"
 							}
@@ -420,6 +429,19 @@
 				},
 				{
 					"name": "Create Customer (Company - CNPJ)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 302\", function () {",
+									"    pm.expect([200, 302]).to.include(pm.response.code);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -465,6 +487,73 @@
 							"path": ["clientes", "novo"]
 						},
 						"description": "Create company customer with CNPJ"
+					},
+					"response": []
+				},
+				{
+					"name": "Try Create Duplicate CPF (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 (form with errors) or 400\", function () {",
+									"    pm.expect([200, 400]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Response contains duplicate CPF/CNPJ error message\", function () {",
+									"    pm.expect(pm.response.text()).to.include('CPF/CNPJ já cadastrado');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "Duplicate Customer Test",
+									"type": "text"
+								},
+								{
+									"key": "tipoPessoa",
+									"value": "FISICA",
+									"type": "text"
+								},
+								{
+									"key": "cpfOuCnpj",
+									"value": "11144477735",
+									"type": "text",
+									"description": "Same CPF as previous test - should fail"
+								},
+								{
+									"key": "email",
+									"value": "duplicate@test.com",
+									"type": "text"
+								},
+								{
+									"key": "telefone",
+									"value": "(11) 98765-0000",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/clientes/novo",
+							"host": ["{{base_url}}"],
+							"path": ["clientes", "novo"]
+						},
+						"description": "Try to create customer with duplicate CPF - should fail with validation error. Tests the fix for CPF/CNPJ duplicate validation bug."
 					},
 					"response": []
 				},
@@ -1016,6 +1105,284 @@
 				}
 			],
 			"description": "City (Cidade) management endpoints"
+		},
+		{
+			"name": "Dashboard & Sales",
+			"item": [
+				{
+					"name": "Dashboard - View",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains dashboard content\", function () {",
+									"    pm.expect(pm.response.text()).to.include('dashboard');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard"]
+						},
+						"description": "View dashboard with statistics: total beers, customers, styles, yearly/monthly sales totals, and average ticket"
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard - Total Sales by Month (JSON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each month entry has required fields\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('mes');",
+									"        pm.expect(jsonData[0]).to.have.property('totalVendas');",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Returns up to 6 months of data\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.length).to.be.at.most(6);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/vendas/totalPorMes",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard", "vendas", "totalPorMes"]
+						},
+						"description": "Get total sales for the last 6 months (used for line chart). Returns JSON with 'mes' (month name) and 'totalVendas' (total sales count)."
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard - Total Sales by Origin (JSON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Each origin entry has required fields\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('origem');",
+									"        pm.expect(jsonData[0]).to.have.property('totalVendas');",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Returns Nacional and/or Internacional origins\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const validOrigins = ['Nacional', 'Internacional'];",
+									"    if (jsonData.length > 0) {",
+									"        jsonData.forEach(entry => {",
+									"            pm.expect(validOrigins).to.include(entry.origem);",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/dashboard/vendas/totalPorOrigem",
+							"host": ["{{base_url}}"],
+							"path": ["dashboard", "vendas", "totalPorOrigem"]
+						},
+						"description": "Get total sales by beer origin (Nacional/Internacional) for donut chart. Returns JSON with 'origem' and 'totalVendas'."
+					},
+					"response": []
+				}
+			],
+			"description": "Dashboard endpoints for sales statistics and charts"
+		},
+		{
+			"name": "Reports (Relatórios)",
+			"item": [
+				{
+					"name": "Sales Report - Form View",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains report form\", function () {",
+									"    pm.expect(pm.response.text()).to.include('relatorio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/relatorios/vendasEmitidas",
+							"host": ["{{base_url}}"],
+							"path": ["relatorios", "vendasEmitidas"]
+						},
+						"description": "Get sales report form with date range inputs"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Sales Report PDF",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is PDF\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf');",
+									"});",
+									"",
+									"pm.test(\"Response has PDF data\", function () {",
+									"    pm.expect(pm.response.size()).to.be.above(100);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "dataInicio",
+									"value": "2024-01-01",
+									"type": "text",
+									"description": "Start date (required, format: yyyy-MM-dd)"
+								},
+								{
+									"key": "dataFim",
+									"value": "2024-12-31",
+									"type": "text",
+									"description": "End date (required, format: yyyy-MM-dd)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/relatorios/vendasEmitidas",
+							"host": ["{{base_url}}"],
+							"path": ["relatorios", "vendasEmitidas"]
+						},
+						"description": "Generate PDF report of issued sales for specified date range. Both dataInicio and dataFim are required (@NotNull validation)."
+					},
+					"response": []
+				},
+				{
+					"name": "Try Generate Report Without Dates (Should Fail)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 (Bad Request)\", function () {",
+									"    pm.expect(pm.response.code).to.eql(400);",
+									"});",
+									"",
+									"pm.test(\"Response indicates validation error\", function () {",
+									"    // Spring returns HTML error page or JSON depending on Accept header",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText.length).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{base_url}}/relatorios/vendasEmitidas",
+							"host": ["{{base_url}}"],
+							"path": ["relatorios", "vendasEmitidas"]
+						},
+						"description": "Try to generate report without required dates - should fail with HTTP 400. Tests @NotNull validation on dataInicio and dataFim."
+					},
+					"response": []
+				}
+			],
+			"description": "Sales report generation endpoints with PDF export"
 		},
 		{
 			"name": "Actuator - Monitoring",
