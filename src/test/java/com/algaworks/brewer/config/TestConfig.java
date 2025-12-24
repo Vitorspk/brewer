@@ -1,11 +1,14 @@
 package com.algaworks.brewer.config;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
+import com.algaworks.brewer.repository.listener.CervejaEntityListener;
 import com.algaworks.brewer.storage.FotoStorage;
 
 /**
@@ -31,6 +34,25 @@ public class TestConfig {
 	@Bean
 	@Primary
 	public FotoStorage fotoStorage() {
-		return mock(FotoStorage.class);
+		FotoStorage mock = mock(FotoStorage.class);
+		// Configurar o mock para retornar URLs de teste quando chamado
+		when(mock.getUrl(anyString())).thenAnswer(invocation -> {
+			String nomeArquivo = invocation.getArgument(0);
+			return "http://localhost/fotos/" + nomeArquivo;
+		});
+		return mock;
+	}
+
+	/**
+	 * Fornece o CervejaEntityListener para testes.
+	 *
+	 * O listener precisa ser um bean gerenciado pelo Spring para ter acesso
+	 * ao ApplicationContext e assim poder buscar o bean FotoStorage.
+	 * Em @DataJpaTest, componentes não são automaticamente escaneados,
+	 * então precisamos declará-lo explicitamente aqui.
+	 */
+	@Bean
+	public CervejaEntityListener cervejaEntityListener() {
+		return new CervejaEntityListener();
 	}
 }
