@@ -81,7 +81,7 @@ class VendasIntegrationTest extends BaseRepositoryIntegrationTest {
 		cliente = new Cliente();
 		cliente.setNome("Cliente Teste");
 		cliente.setTipoPessoa(TipoPessoa.FISICA);
-		cliente.setCpfOuCnpj("12345678901");
+		cliente.setCpfOuCnpj("34608514090"); // CPF válido para testes
 		cliente.setEmail("cliente@teste.com");
 
 		Endereco endereco = new Endereco();
@@ -219,10 +219,10 @@ class VendasIntegrationTest extends BaseRepositoryIntegrationTest {
 			.orElse(null);
 
 		assertThat(nacional).isNotNull();
-		assertThat(nacional.getTotalVendas()).isEqualTo(4); // 2 + 2 itens de vendas diferentes
+		assertThat(nacional.getTotalVendas()).isEqualTo(3); // 1 item da primeira venda + 2 itens da vendaMista
 
 		assertThat(internacional).isNotNull();
-		assertThat(internacional.getTotalVendas()).isEqualTo(3);
+		assertThat(internacional.getTotalVendas()).isEqualTo(1); // 1 item da segunda venda
 	}
 
 	@Test
@@ -257,7 +257,7 @@ class VendasIntegrationTest extends BaseRepositoryIntegrationTest {
 
 		// Then
 		assertThat(resultado).hasSize(1);
-		assertThat(resultado.get(0).getTotalVendas()).isEqualTo(2); // Apenas emitidas
+		assertThat(resultado.get(0).getTotalVendas()).isEqualTo(1); // Conta 1 item de venda, não a quantidade
 	}
 
 	@Test

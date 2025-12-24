@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +54,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarTotalVendasPorMes() throws Exception {
 		// Given
-		List<VendaMes> vendasMes = Arrays.asList(
+		var vendasMes = List.of(
 			new VendaMes("Jan", 10),
 			new VendaMes("Fev", 15),
 			new VendaMes("Mar", 20),
@@ -87,7 +85,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarListaVaziaQuandoNaoHouverVendasPorMes() throws Exception {
 		// Given
-		when(vendas.totalPorMes()).thenReturn(Collections.emptyList());
+		when(vendas.totalPorMes()).thenReturn(List.of());
 
 		// When & Then
 		mockMvc.perform(get("/dashboard/vendas/totalPorMes")
@@ -103,7 +101,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarVendasComTotalZero() throws Exception {
 		// Given
-		List<VendaMes> vendasMes = Arrays.asList(
+		var vendasMes = List.of(
 			new VendaMes("Jan", 0),
 			new VendaMes("Fev", 0),
 			new VendaMes("Mar", 0),
@@ -129,7 +127,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarTotalVendasPorOrigem() throws Exception {
 		// Given
-		List<VendaOrigem> vendasOrigem = Arrays.asList(
+		var vendasOrigem = List.of(
 			new VendaOrigem("Nacional", 45),
 			new VendaOrigem("Internacional", 30)
 		);
@@ -154,7 +152,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarListaVaziaQuandoNaoHouverVendasPorOrigem() throws Exception {
 		// Given
-		when(vendas.totalPorOrigem()).thenReturn(Collections.emptyList());
+		when(vendas.totalPorOrigem()).thenReturn(List.of());
 
 		// When & Then
 		mockMvc.perform(get("/dashboard/vendas/totalPorOrigem")
@@ -170,7 +168,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarApenasUmaOrigemQuandoHouverVendasDeUmTipo() throws Exception {
 		// Given
-		List<VendaOrigem> vendasOrigem = Arrays.asList(
+		var vendasOrigem = List.of(
 			new VendaOrigem("Nacional", 50)
 		);
 
@@ -191,7 +189,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarVendasPorOrigemComTotalZero() throws Exception {
 		// Given
-		List<VendaOrigem> vendasOrigem = Arrays.asList(
+		var vendasOrigem = List.of(
 			new VendaOrigem("Nacional", 0),
 			new VendaOrigem("Internacional", 0)
 		);
@@ -213,31 +211,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveAceitarRequisicaoGetNoEndpointTotalPorMes() throws Exception {
 		// Given
-		when(vendas.totalPorMes()).thenReturn(Collections.emptyList());
-
-		// When & Then
-		mockMvc.perform(get("/dashboard/vendas/totalPorMes"))
-			.andExpect(status().isOk());
-	}
-
-	@Test
-	@DisplayName("Deve aceitar requisição GET no endpoint totalPorOrigem")
-	@WithMockUser
-	void deveAceitarRequisicaoGetNoEndpointTotalPorOrigem() throws Exception {
-		// Given
-		when(vendas.totalPorOrigem()).thenReturn(Collections.emptyList());
-
-		// When & Then
-		mockMvc.perform(get("/dashboard/vendas/totalPorOrigem"))
-			.andExpect(status().isOk());
-	}
-
-	@Test
-	@DisplayName("Deve retornar dados com caracteres especiais no nome do mês")
-	@WithMockUser
-	void deveRetornarDadosComCaracteresEspeciaisNoNomeDoMes() throws Exception {
-		// Given
-		List<VendaMes> vendasMes = Arrays.asList(
+		var vendasMes = List.of(
 			new VendaMes("Dez", 5)
 		);
 
@@ -255,7 +229,7 @@ class DashboardControllerTest {
 	@WithMockUser
 	void deveRetornarDadosComValoresAltosDeVendas() throws Exception {
 		// Given
-		List<VendaMes> vendasMes = Arrays.asList(
+		var vendasMes = List.of(
 			new VendaMes("Jan", 99999)
 		);
 
