@@ -8,11 +8,19 @@ Brewer.GraficoVendasPorMes = (function() {
 
 	GraficoVendasPorMes.prototype.iniciar = function() {
 		var url = '/dashboard/vendas/totalPorMes';
+		var token = $('input[name=_csrf]').val();
+		var header = $('input[name=_csrf_header]').val();
 
 		$.ajax({
 			url: url,
 			method: 'GET',
-			success: onDadosRecebidos.bind(this)
+			beforeSend: function(xhr) {
+				xhr.setRequestHeader(header, token);
+			},
+			success: onDadosRecebidos.bind(this),
+			error: function(xhr, status, error) {
+				console.error('Erro ao carregar vendas por mês:', error);
+			}
 		});
 	}
 
@@ -78,11 +86,19 @@ Brewer.GraficoVendasPorOrigem = (function() {
 
 	GraficoVendasPorOrigem.prototype.iniciar = function() {
 		var url = '/dashboard/vendas/totalPorOrigem';
+		var token = $('input[name=_csrf]').val();
+		var header = $('input[name=_csrf_header]').val();
 
 		$.ajax({
 			url: url,
 			method: 'GET',
-			success: onDadosRecebidos.bind(this)
+			beforeSend: function(xhr) {
+				xhr.setRequestHeader(header, token);
+			},
+			success: onDadosRecebidos.bind(this),
+			error: function(xhr, status, error) {
+				console.error('Erro ao carregar vendas por origem:', error);
+			}
 		});
 	}
 

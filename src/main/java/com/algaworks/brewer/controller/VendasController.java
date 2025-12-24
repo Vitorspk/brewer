@@ -1,11 +1,16 @@
 package com.algaworks.brewer.controller;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -65,6 +70,16 @@ public class VendasController {
 	@InitBinder("venda")
 	public void inicializarValidador(WebDataBinder binder) {
 		binder.setValidator(vendaValidator);
+
+		// Configurar conversão de BigDecimal para aceitar formato brasileiro (vírgula como decimal)
+		DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("pt", "BR"));
+		symbols.setGroupingSeparator('.');
+		symbols.setDecimalSeparator(',');
+
+		DecimalFormat format = new DecimalFormat("#,##0.00", symbols);
+		format.setParseBigDecimal(true);
+
+		binder.registerCustomEditor(BigDecimal.class, new CustomNumberEditor(BigDecimal.class, format, true));
 	}
 
 	@GetMapping("/nova")
@@ -163,6 +178,20 @@ public class VendasController {
 		ModelAndView mv = nova(venda);
 		mv.addObject(venda);
 		return mv;
+	}
+
+	@PostMapping("/{codigo}/emitir")
+	@ResponseBody
+	public String emitirVenda(@PathVariable Long codigo) {
+		try {
+			Venda venda = vendas.findById(codigo)
+					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venda não encontrada"));
+
+			cadastroVendaService.emitir(venda);
+			return "OK";
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
 	}
 
 	@PostMapping(value = "/nova", params = "enviarEmail")

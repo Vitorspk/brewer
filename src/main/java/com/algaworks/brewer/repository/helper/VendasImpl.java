@@ -85,8 +85,9 @@ public class VendasImpl implements VendasQueries {
 
         criteria.where(builder.equal(root.get("codigo"), codigo));
 
-        // ROBUSTNESS FIX: Return Optional to avoid NoResultException
-        return manager.createQuery(criteria).getResultStream().findFirst();
+        // ROBUSTNESS FIX: Use getResultList() to avoid connection closed error with streams
+        List<Venda> result = manager.createQuery(criteria).getResultList();
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 
     @Override
@@ -163,6 +164,14 @@ public class VendasImpl implements VendasQueries {
 
         if (filtro.getAte() != null) {
             predicates.add(builder.lessThanOrEqualTo(root.get("dataCriacao"), filtro.getAte()));
+        }
+
+        if (filtro.getDataCriacaoInicio() != null) {
+            predicates.add(builder.greaterThanOrEqualTo(root.get("dataCriacao"), filtro.getDataCriacaoInicio()));
+        }
+
+        if (filtro.getDataCriacaoFim() != null) {
+            predicates.add(builder.lessThanOrEqualTo(root.get("dataCriacao"), filtro.getDataCriacaoFim()));
         }
 
         if (filtro.getValorMinimo() != null) {
@@ -242,7 +251,7 @@ public class VendasImpl implements VendasQueries {
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
         Root<Venda> root = criteria.from(Venda.class);
 
-        criteria.select(builder.count(root));
+        criteria.select(builder.countDistinct(root));
         criteria.where(
             builder.between(root.get("dataCriacao"), inicio, fim),
             builder.equal(root.get("status"), StatusVenda.EMITIDA)

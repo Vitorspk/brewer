@@ -95,20 +95,20 @@
 			<table class="table  table-hover">
 				<thead>
 					<tr>
-						<th class="table-vendas-col-codigo">
+						<th class="text-center table-vendas-col-codigo">
 							<brewer:order page="${pagina}" field="codigo" text="Código"/>
 						</th>
-						<th class="table-vendas-col-data-criacao">
+						<th class="text-center table-vendas-col-data-criacao">
 							<brewer:order page="${pagina}" field="dataCriacao" text="Data de criação"/>
 						</th>
 						<th class="table-vendas-col-cliente">Cliente</th>
-						<th class="table-vendas-col-valor-total">
+						<th class="text-right table-vendas-col-valor-total">
 							<brewer:order page="${pagina}" field="valorTotal" text="Valor total"/>
 						</th>
-						<th class="table-vendas-col-status">
+						<th class="text-center table-vendas-col-status">
 							<brewer:order page="${pagina}" field="status" text="Status"/>
 						</th>
-						<th class="table-vendas-col-acoes"></th>
+						<th class="text-center table-vendas-col-acoes"></th>
 					</tr>
 				</thead>
 
@@ -126,6 +126,12 @@
 							<a class="btn  btn-link  btn-xs  js-tooltip" title="Editar"
 								th:href="@{/vendas/{codigo}(codigo=${venda.codigo})}">
 								<i class="glyphicon glyphicon-pencil"></i>
+							</a>
+							<a class="btn  btn-link  btn-xs  js-tooltip  js-emitir-venda-btn" title="Emitir"
+								th:if="${venda.status.name() == 'ORCAMENTO'}"
+								th:data-codigo="${venda.codigo}"
+								th:data-nome-cliente="${venda.cliente?.nome}">
+								<i class="glyphicon glyphicon-ok-circle"></i>
 							</a>
 							<a class="btn  btn-link  btn-xs  js-tooltip" title="Cancelar"
 								th:if="${venda.status.name() == 'EMITIDA'}"
@@ -145,5 +151,9 @@
 	</div>
 
 </section>
+
+<th:block layout:fragment="javascript-extra">
+	<script th:src="@{/javascripts/venda.emitir.js}"></script>
+</th:block>
 </body>
 </html>

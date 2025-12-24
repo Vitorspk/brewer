@@ -40,7 +40,7 @@ public class Venda implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long codigo;
 
-	@Column(name = "data_criacao")
+	@Column(name = "data_criacao", updatable = false)
 	private LocalDate dataCriacao;
 
 	@Column(name = "valor_frete")
@@ -83,8 +83,13 @@ public class Venda implements Serializable {
 	private LocalTime horarioEntrega;
 
 	@PrePersist
+	private void prePersist() {
+		this.dataCriacao = LocalDate.now();
+		this.valorTotal = calcularValorTotal();
+	}
+
 	@PreUpdate
-	private void prePersistPreUpdate() {
+	private void preUpdate() {
 		this.valorTotal = calcularValorTotal();
 	}
 

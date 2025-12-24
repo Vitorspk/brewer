@@ -55,11 +55,11 @@ Brewer.MaskCep = (function() {
 }());
 
 Brewer.MaskDate = (function() {
-	
+
 	function MaskDate() {
 		this.inputDate = $('.js-date');
 	}
-	
+
 	MaskDate.prototype.enable = function() {
 		this.inputDate.mask('00/00/0000');
 		this.inputDate.datepicker({
@@ -68,9 +68,60 @@ Brewer.MaskDate = (function() {
 			autoclose: true
 		});
 	}
-	
+
 	return MaskDate;
-	
+
+}());
+
+Brewer.MaskTime = (function() {
+
+	function MaskTime() {
+		this.inputTime = $('.js-time');
+	}
+
+	MaskTime.prototype.enable = function() {
+		var options = {
+			onKeyPress: function(val, e, field, options) {
+				// Valida se a hora está entre 00-23 e os minutos entre 00-59
+				var parts = val.split(':');
+				if (parts.length === 2) {
+					var hour = parseInt(parts[0]);
+					var minute = parseInt(parts[1]);
+
+					// Corrige hora se maior que 23
+					if (hour > 23) {
+						field.val('23:' + (parts[1] || '00'));
+					}
+					// Corrige minuto se maior que 59
+					if (minute > 59) {
+						field.val(parts[0] + ':59');
+					}
+				}
+			}
+		};
+
+		this.inputTime.mask('00:00', options);
+
+		// Validação ao sair do campo
+		this.inputTime.blur(function() {
+			var val = $(this).val();
+			if (val.length === 5) {
+				var parts = val.split(':');
+				var hour = parseInt(parts[0]);
+				var minute = parseInt(parts[1]);
+
+				if (hour > 23) {
+					$(this).val('23:' + parts[1]);
+				}
+				if (minute > 59) {
+					$(this).val(parts[0] + ':59');
+				}
+			}
+		});
+	}
+
+	return MaskTime;
+
 }());
 
 Brewer.Security = (function() {
@@ -98,17 +149,20 @@ Brewer.formatarMoeda = function(valor) {
 $(function() {
 	var maskMoney = new Brewer.MaskMoney();
 	maskMoney.enable();
-	
+
 	var maskPhoneNumber = new Brewer.MaskPhoneNumber();
 	maskPhoneNumber.enable();
-	
+
 	var maskCep = new Brewer.MaskCep();
 	maskCep.enable();
-	
+
 	var maskDate = new Brewer.MaskDate();
 	maskDate.enable();
-	
+
+	var maskTime = new Brewer.MaskTime();
+	maskTime.enable();
+
 	var security = new Brewer.Security();
 	security.enable();
-	
+
 });
