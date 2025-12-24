@@ -247,17 +247,16 @@ public class VendasImpl implements VendasQueries {
     }
 
     private Integer countVendasNoPeriodo(LocalDate inicio, LocalDate fim) {
-        CriteriaBuilder builder = manager.getCriteriaBuilder();
-        CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
-        Root<Venda> root = criteria.from(Venda.class);
+        String jpql = "SELECT COUNT(v.codigo) FROM Venda v " +
+                     "WHERE v.dataCriacao BETWEEN :inicio AND :fim " +
+                     "AND v.status = :status";
 
-        criteria.select(builder.countDistinct(root.get("codigo")));
-        criteria.where(
-            builder.between(root.get("dataCriacao"), inicio, fim),
-            builder.equal(root.get("status"), StatusVenda.EMITIDA)
-        );
+        Long count = manager.createQuery(jpql, Long.class)
+            .setParameter("inicio", inicio)
+            .setParameter("fim", fim)
+            .setParameter("status", StatusVenda.EMITIDA)
+            .getSingleResult();
 
-        Long count = manager.createQuery(criteria).getSingleResult();
         return count != null ? count.intValue() : 0;
     }
 }
