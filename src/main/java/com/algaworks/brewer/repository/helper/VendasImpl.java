@@ -251,7 +251,7 @@ public class VendasImpl implements VendasQueries {
         CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
         Root<Venda> root = criteria.from(Venda.class);
 
-        criteria.select(builder.countDistinct(root));
+        criteria.select(builder.countDistinct(root.get("codigo")));
         criteria.where(
             builder.between(root.get("dataCriacao"), inicio, fim),
             builder.equal(root.get("status"), StatusVenda.EMITIDA)
