@@ -84,7 +84,9 @@ public class Venda implements Serializable {
 
 	@PrePersist
 	private void prePersist() {
-		this.dataCriacao = LocalDate.now();
+		if (this.dataCriacao == null) {
+			this.dataCriacao = LocalDate.now();
+		}
 		this.valorTotal = calcularValorTotal();
 	}
 
