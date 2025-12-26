@@ -5,6 +5,7 @@ metadata:
   namespace: brewer
   labels:
     app: brewer
+    component: application
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -13,12 +14,14 @@ spec:
   minReplicas: 2
   maxReplicas: 10
   metrics:
+  # CPU-based scaling
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
         averageUtilization: 70
+  # Memory-based scaling
   - type: Resource
     resource:
       name: memory
@@ -32,13 +35,17 @@ spec:
       - type: Percent
         value: 50
         periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
     scaleUp:
-      stabilizationWindowSeconds: 0
+      stabilizationWindowSeconds: 60
       policies:
       - type: Percent
         value: 100
-        periodSeconds: 30
+        periodSeconds: 60
       - type: Pods
         value: 2
-        periodSeconds: 30
+        periodSeconds: 60
       selectPolicy: Max
