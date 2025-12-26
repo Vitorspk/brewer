@@ -89,6 +89,19 @@ jobs:
         fi
         echo "✅ Secret 'brewer-secrets' exists"
 
+    - name: Install Cluster Infrastructure
+      run: |
+        # Install metrics-server (required for HPA)
+        if ! kubectl get deployment metrics-server -n kube-system >/dev/null 2>&1; then
+          echo "📊 Installing metrics-server..."
+          kubectl apply -f k8s/cluster-infra/metrics-server.yaml
+          echo "⏳ Waiting for metrics-server to be ready..."
+          kubectl wait --for=condition=available --timeout=2m deployment/metrics-server -n kube-system
+          echo "✅ metrics-server installed successfully"
+        else
+          echo "✅ metrics-server already installed"
+        fi
+
     - name: Deploy to EKS
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -120,10 +133,10 @@ jobs:
         # Wait for rollout to complete
         kubectl rollout status deployment/brewer-app -n $K8S_NAMESPACE --timeout=5m
 
-        # Apply HPA (Horizontal Pod Autoscaler) if exists
-        if [ -f k8s/base/hpa.yaml ]; then
-          kubectl apply -f k8s/base/hpa.yaml
-        fi
+        # Apply HPA (Horizontal Pod Autoscaler)
+        echo "📊 Applying HPA for auto-scaling..."
+        kubectl apply -f k8s/base/hpa.yaml
+        echo "✅ HPA configured: min=2, max=10 replicas"
 
     - name: Verify deployment
       run: |
