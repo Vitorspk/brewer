@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flyway-repair
+  namespace: brewer
+  labels:
+    app: brewer
+    component: migration
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: brewer
+        component: migration
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: flyway-repair
+        # Image must be set when running the job:
+        # sed "s|image: brewer:latest|image: <ECR_REGISTRY>/<ECR_REPOSITORY>:<TAG>|" flyway-repair-job.yaml | kubectl apply -f -
+        image: brewer:latest
+        imagePullPolicy: Always
+        command: ["java"]
+        args:
+        - "-jar"
+        - "/app/app.jar"
+        - "--spring.main.web-application-type=none"
+        - "--spring.flyway.enabled=true"
+        - "--spring.flyway.repair-on-migrate=true"
+        - "--spring.jpa.hibernate.ddl-auto=none"
+        - "--spring.boot.admin.client.enabled=false"
+
+        # Environment variables from ConfigMap and Secret
+        envFrom:
+        - configMapRef:
+            name: brewer-config
+        - secretRef:
+            name: brewer-secrets
+
+        # Override to run repair
+        env:
+        - name: SPRING_FLYWAY_ENABLED
+          value: "true"
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+
+      securityContext:
+        fsGroup: 1000

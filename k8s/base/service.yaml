@@ -7,10 +7,10 @@ metadata:
     app: brewer
     component: application
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # Using ClusterIP with Ingress for HTTP/HTTPS traffic
+    # This avoids redundant LoadBalancer costs
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: brewer
     component: application
@@ -19,7 +19,4 @@ spec:
     port: 80
     targetPort: http
     protocol: TCP
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800
+  sessionAffinity: None

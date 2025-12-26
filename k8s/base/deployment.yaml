@@ -29,6 +29,7 @@ spec:
     spec:
       containers:
       - name: brewer
+        # Image will be updated by CI/CD (kubectl set image)
         image: brewer:latest
         imagePullPolicy: Always
         ports:
@@ -47,10 +48,10 @@ spec:
         resources:
           requests:
             memory: "512Mi"
-            cpu: "250m"
+            cpu: "200m"
           limits:
             memory: "1Gi"
-            cpu: "1000m"
+            cpu: "500m"
         
         # Liveness probe - checks if app is alive
         livenessProbe:
@@ -77,12 +78,12 @@ spec:
         # Startup probe - gives app more time to start
         startupProbe:
           httpGet:
-            path: /actuator/health
+            path: /actuator/health/liveness
             port: http
           initialDelaySeconds: 0
-          periodSeconds: 10
+          periodSeconds: 5
           timeoutSeconds: 3
-          failureThreshold: 30
+          failureThreshold: 60
           successThreshold: 1
         
         # Security context

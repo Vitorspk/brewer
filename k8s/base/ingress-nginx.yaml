@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: brewer-ingress-nginx
+  namespace: brewer
+  labels:
+    app: brewer
+  annotations:
+    # Cloudflare Proxy handles HTTPS, disable redirect to prevent loops
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    # Rate limiting to prevent DDoS and abuse
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-rpm: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+    # Proxy settings
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    # Session affinity (8 hours instead of 48h for security)
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "brewer-affinity"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "28800"
+spec:
+  ingressClassName: nginx
+  # TLS configuration (uncomment when certificate is ready)
+  # tls:
+  # - hosts:
+  #   - brewer.virosistemas.com
+  #   secretName: brewer-tls-cert
+  rules:
+  - host: brewer.virosistemas.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: brewer-app
+            port:
+              number: 80
