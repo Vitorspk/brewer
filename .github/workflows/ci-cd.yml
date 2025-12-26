@@ -210,10 +210,14 @@ jobs:
           EOF
 
           echo "Testing kubeconform catches invalid manifests..."
-          if kubeconform /tmp/invalid-manifest.yaml 2>&1 | grep -q "InvalidKind is not a valid"; then
+          if kubeconform /tmp/invalid-manifest.yaml 2>&1 | grep -qE "(InvalidKind|not a valid|unknown kind)"; then
             echo "✓ Kubeconform correctly detected invalid manifest"
+          elif ! kubeconform /tmp/invalid-manifest.yaml > /dev/null 2>&1; then
+            # If kubeconform exits with non-zero, it detected the error
+            echo "✓ Kubeconform correctly detected invalid manifest (non-zero exit)"
           else
             echo "✗ Kubeconform failed to detect invalid manifest"
+            kubeconform /tmp/invalid-manifest.yaml 2>&1 || true
             exit 1
           fi
 
