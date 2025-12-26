@@ -135,7 +135,7 @@ jobs:
         run: |
           # Kubeconform is the actively maintained replacement for kubeval
           VERSION="0.6.7"
-          CHECKSUM="40cdd5e7e9c180a6166ebd006fb66e84d7f99991d16bc9f9dbef463e3e1df7d2"
+          CHECKSUM="95f14e87aa28c09d5941f11bd024c1d02fdc0303ccaa23f61cef67bc92619d73"
           wget -q "https://github.com/yannh/kubeconform/releases/download/v${VERSION}/kubeconform-linux-amd64.tar.gz"
           echo "${CHECKSUM} kubeconform-linux-amd64.tar.gz" | sha256sum -c -
           tar xf kubeconform-linux-amd64.tar.gz
@@ -144,20 +144,18 @@ jobs:
 
       - name: Install kube-score
         run: |
+          # Kube-score doesn't provide official checksums, using version pinning for security
           VERSION="1.18.0"
-          CHECKSUM="2e8d9c18e9d8e50d6a19b36a5a6e5be2e61d3d2a4e9e8c8e2e2e8e8e8e8e8e8e"
           wget -q "https://github.com/zegl/kube-score/releases/download/v${VERSION}/kube-score_${VERSION}_linux_amd64.tar.gz"
-          # Note: kube-score doesn't provide official checksums, using version pinning only
           tar xf "kube-score_${VERSION}_linux_amd64.tar.gz"
           sudo mv kube-score /usr/local/bin
           kube-score version
 
       - name: Install kube-linter
         run: |
+          # Kube-linter doesn't provide official checksums, using version pinning for security
           VERSION="0.6.8"
-          CHECKSUM="4b6f0a73f83f632a0107d80e3c5e72e0d11b7c6b6b0e6e6e6e6e6e6e6e6e6e6e"
           wget -q "https://github.com/stackrox/kube-linter/releases/download/v${VERSION}/kube-linter-linux.tar.gz"
-          # Note: kube-linter doesn't provide official checksums, using version pinning only
           tar xf kube-linter-linux.tar.gz
           sudo mv kube-linter /usr/local/bin
           kube-linter version
