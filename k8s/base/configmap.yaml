@@ -10,13 +10,6 @@ data:
   SPRING_PROFILES_ACTIVE: "prod"
   SERVER_PORT: "8080"
 
-  # Session cookie configuration (allow HTTP for testing)
-  SERVER_SERVLET_SESSION_COOKIE_SECURE: "false"
-
-  # Database Configuration (non-sensitive)
-  DATABASE_URL: "jdbc:mysql://brewer-db.clhydspk2fa7.sa-east-1.rds.amazonaws.com:3306/brewer?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
-  DATABASE_USERNAME: "admin"
-
   # AWS Configuration
   AWS_REGION: "sa-east-1"
   AWS_S3_BUCKET: "brewer-fotos"
@@ -29,7 +22,6 @@ data:
   # Flyway Configuration
   SPRING_FLYWAY_ENABLED: "true"
   SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
-  SPRING_FLYWAY_VALIDATE_ON_MIGRATE: "false"
 
   # Actuator Configuration
   MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"

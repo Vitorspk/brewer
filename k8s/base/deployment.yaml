@@ -7,7 +7,7 @@ metadata:
     app: brewer
     component: application
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -29,9 +29,8 @@ spec:
     spec:
       containers:
       - name: brewer
-        # image: brewer:latest
-        image: 491292497838.dkr.ecr.sa-east-1.amazonaws.com/brewer:latest
-        imagePullPolicy: Always
+        image: 491292497838.dkr.ecr.sa-east-1.amazonaws.com/brewer:v1.0.0
+        imagePullPolicy: IfNotPresent
         ports:
         - name: http
           containerPort: 8080

@@ -6,18 +6,29 @@ metadata:
   labels:
     app: brewer
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Enable HTTPS redirect when certificate is configured
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Force HTTPS
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Certificate issuer (uncomment when cert-manager is installed)
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "brewer-affinity"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
 spec:
   ingressClassName: nginx
+  # TLS configuration (uncomment when certificate is ready)
+  # tls:
+  # - hosts:
+  #   - brewer.virosistemas.com
+  #   secretName: brewer-tls-cert
   rules:
-  - http:
+  - host: brewer.virosistemas.com
+    http:
       paths:
       - path: /
         pathType: Prefix
