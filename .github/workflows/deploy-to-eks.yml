@@ -111,9 +111,11 @@ jobs:
         kubectl apply -f k8s/base/service.yaml
         kubectl apply -f k8s/base/ingress-nginx.yaml
 
-        # Apply or update Deployment with new image
-        kubectl apply -f k8s/base/deployment.yaml
-        kubectl set image deployment/brewer-app brewer=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n $K8S_NAMESPACE
+        # Apply Deployment with substituted image tag
+        # This prevents drift between Git manifest and running deployment
+        cat k8s/base/deployment.yaml | \
+          sed "s|image: brewer:latest|image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" | \
+          kubectl apply -f -
 
         # Wait for rollout to complete
         kubectl rollout status deployment/brewer-app -n $K8S_NAMESPACE --timeout=5m

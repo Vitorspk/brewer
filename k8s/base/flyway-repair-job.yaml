@@ -18,7 +18,8 @@ spec:
       restartPolicy: Never
       containers:
       - name: flyway-repair
-        # Image will be set manually when running the job
+        # Image must be set when running the job:
+        # sed "s|image: brewer:latest|image: <ECR_REGISTRY>/<ECR_REPOSITORY>:<TAG>|" flyway-repair-job.yaml | kubectl apply -f -
         image: brewer:latest
         imagePullPolicy: Always
         command: ["java"]
