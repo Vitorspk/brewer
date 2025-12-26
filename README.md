@@ -79,8 +79,21 @@ A comprehensive brewery management system built with modern Java technologies. T
 ### Build & Dev Tools
 - **Maven 3.8+** - Build and dependency management
 - **Spring Boot DevTools** - Hot reload and development utilities
-- **Docker** - Containerization
+- **Docker** - Containerization with multi-stage builds
 - **Docker Compose** - Multi-container orchestration
+- **Kubernetes** - Container orchestration (AWS EKS)
+
+### Cloud & Storage
+- **AWS SDK v2 (2.29.29)** - S3 integration (migrated from v1)
+- **Thumbnailator 0.4.20** - Image thumbnail generation
+
+### Reporting
+- **JasperReports 6.21.2** - PDF report generation
+- **JasperReports Fonts 6.21.2** - Font support for reports
+
+### Additional Libraries
+- **Guava 33.5.0** - Google utilities and caching
+- **Apache Commons BeanUtils 1.11.0** - Reflection utilities (CVE-2025-48734 patched)
 
 ## 📦 Prerequisites
 
@@ -300,7 +313,290 @@ docker-compose -f docker-compose.test.yml down
 ### Docker Configuration Files
 - `docker-compose.yml` - Production-like environment
 - `docker-compose.test.yml` - Test database (port 3307)
-- `Dockerfile` - Application containerization (if needed)
+- `Dockerfile` - Multi-stage build (Maven build + JRE runtime)
+
+## ☸️ Kubernetes Deployment
+
+### Overview
+
+The application includes production-ready Kubernetes manifests for deployment to AWS EKS or any Kubernetes cluster.
+
+**Location:** `/k8s/base/` (13 manifest files)
+
+### Key Features
+
+- **Auto-scaling:** Horizontal Pod Autoscaler (1-2 replicas, 70% CPU / 80% memory targets)
+- **Health Checks:** Startup, liveness, and readiness probes using Spring Boot Actuator
+- **Security:** Non-root containers, no privilege escalation, security contexts
+- **High Availability:** Pod Disruption Budget, resource quotas, rolling updates
+- **Monitoring:** Metrics server integration for HPA
+- **Ingress:** NGINX ingress controller support
+
+### Deployment Resources
+
+```bash
+k8s/base/
+├── namespace.yaml           # brewer namespace
+├── deployment.yaml          # 2 replicas with health probes
+├── service.yaml            # LoadBalancer/ClusterIP service
+├── configmap.yaml          # Non-sensitive configuration
+├── secret.yaml.template    # Secrets (must be created manually)
+├── hpa.yaml               # Horizontal Pod Autoscaler
+├── resourcequota.yaml     # Namespace resource limits
+├── pdb.yaml              # Pod Disruption Budget
+├── ingress-nginx.yaml    # NGINX Ingress controller
+├── ingress.yaml          # Application ingress
+└── flyway-repair-job.yaml # Migration repair Kubernetes job
+```
+
+### Resource Configuration
+
+**Pod Resources:**
+- Requests: 200m CPU, 512Mi memory
+- Limits: 500m CPU, 1Gi memory
+
+**Health Probes:**
+- Startup: 5s period, 60 attempts (5-minute grace period)
+- Liveness: `/actuator/health/liveness` (10s period, 60s initial delay)
+- Readiness: `/actuator/health/readiness` (5s period, 30s initial delay)
+
+### Deploy to Kubernetes
+
+#### Manual Deployment
+```bash
+# Configure kubectl for your cluster
+kubectl config use-context your-cluster
+
+# Create secrets from template
+cp k8s/base/secret.yaml.template k8s/base/secret.yaml
+# Edit secret.yaml with your base64-encoded credentials
+
+# Apply all manifests
+kubectl apply -f k8s/base/
+
+# Verify deployment
+kubectl get pods -n brewer
+kubectl get svc -n brewer
+kubectl get hpa -n brewer
+```
+
+#### AWS EKS Deployment
+```bash
+# Configure AWS CLI and EKS
+aws eks update-kubeconfig --region sa-east-1 --name eks-dev
+
+# Run deployment script
+./scripts/deploy-to-eks.sh
+
+# Or use GitHub Actions workflow
+# Push to main branch to trigger automatic deployment
+```
+
+### Kubernetes Manifest Validation
+
+All manifests are automatically validated in CI/CD pipeline:
+
+1. **Kubeconform** - Syntax validation against Kubernetes schema
+2. **Kube-score** - Best practices and quality analysis
+3. **Kube-linter** - Security scanning (configured in `.kube-linter.yaml`)
+4. **kubectl dry-run** - Deploy simulation
+
+Run validations locally:
+```bash
+# Install tools (see k8s/README.md for installation)
+kubeconform -strict -summary k8s/base/*.yaml
+kube-score score k8s/base/*.yaml
+kube-linter lint k8s/base/ --config .kube-linter.yaml
+kubectl apply --dry-run=client -f k8s/base/
+```
+
+### Troubleshooting
+
+```bash
+# View pod logs
+kubectl logs -n brewer -l app=brewer --tail=100 -f
+
+# Check pod status
+kubectl describe pod -n brewer <pod-name>
+
+# Test health endpoints
+kubectl exec -n brewer <pod-name> -- wget -qO- http://localhost:8080/actuator/health/liveness
+
+# Check HPA status
+kubectl get hpa -n brewer
+kubectl top pods -n brewer
+
+# View service endpoints
+kubectl get endpoints -n brewer
+```
+
+For detailed Kubernetes documentation, see [k8s/README.md](k8s/README.md).
+
+## 🚀 CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+The project includes 4 automated CI/CD workflows:
+
+#### 1. CI Pipeline (`ci.yml`)
+**Trigger:** Push to master/main/develop/feature/fix branches
+
+**Jobs:**
+- Checkout code
+- Setup JDK 21 with Maven cache
+- Run all tests with MySQL 8.0 service
+- Generate test reports
+- Upload test results and coverage
+
+#### 2. Full CI/CD Pipeline (`ci-cd.yml`)
+**Trigger:** Push to master or pull requests to master
+
+**Jobs:**
+1. **Build & Test**
+   - Compile with Maven
+   - Run 51 integration tests
+   - Package JAR artifact
+   - Upload build artifacts
+
+2. **Docker Build & Push** (master only)
+   - Multi-arch Docker build (linux/amd64, linux/arm64)
+   - Push to Docker Hub
+   - Tags: branch name, latest, git SHA
+
+3. **Kubernetes Manifest Validation**
+   - Kubeconform syntax validation
+   - Kube-score quality analysis
+   - Kube-linter security scanning
+   - kubectl dry-run test
+
+4. **Security Scan**
+   - Trivy vulnerability scanner
+   - Scan for CVEs, secrets, misconfigurations
+   - Upload SARIF to GitHub Security tab
+   - Severity: CRITICAL, HIGH
+
+#### 3. Deploy to EKS (`deploy-to-eks.yml`)
+**Trigger:** Push to main or manual workflow dispatch
+
+**Steps:**
+- Run full test suite
+- Build Maven package
+- Configure AWS credentials
+- Login to Amazon ECR
+- Build and push Docker image
+- Update kubeconfig for EKS
+- Install metrics-server if needed
+- Apply Kubernetes manifests
+- Wait for rollout completion (5-minute timeout)
+- Apply HPA
+- Verify deployment
+
+**Target:** AWS EKS cluster in sa-east-1 region
+
+#### 4. Claude Code Review (`claude-code-review.yml`)
+**Trigger:** Pull requests
+
+**Purpose:** AI-powered code review using Claude
+
+### Pipeline Features
+
+- **Concurrency Control:** Cancel in-progress runs on new commits
+- **Caching:** Maven dependencies cached for faster builds
+- **Matrix Testing:** MySQL 8.0.39 service container
+- **Security:** SARIF reports uploaded to GitHub Security tab
+- **Artifacts:** Test results, coverage reports, and JAR files
+- **Permissions:** Read-only access, write to security-events
+
+### Running CI/CD Locally
+
+```bash
+# Run tests as CI does
+mvn clean test
+
+# Build Docker image as CI does
+docker build -t brewer:local .
+
+# Validate Kubernetes manifests as CI does
+kubeconform -strict -summary k8s/base/*.yaml
+kube-score score k8s/base/*.yaml
+kube-linter lint k8s/base/ --config .kube-linter.yaml
+
+# Security scan as CI does
+docker run --rm -v $(pwd):/root aquasec/trivy:latest fs /root
+```
+
+### CI/CD Best Practices
+
+- All tests must pass before merge
+- Docker images are multi-stage for minimal size
+- Kubernetes manifests validated before deployment
+- Security scans run on every build
+- Automated deployment to EKS on main branch
+- Rollback capability via Kubernetes deployment history
+
+## ☁️ AWS Infrastructure
+
+### Services Used
+
+#### Amazon EKS (Elastic Kubernetes Service)
+- **Purpose:** Container orchestration
+- **Region:** sa-east-1 (São Paulo)
+- **Cluster:** eks-dev
+- **Features:** Auto-scaling, load balancing, health checks
+
+#### Amazon ECR (Elastic Container Registry)
+- **Purpose:** Docker image storage
+- **Repository:** Private ECR repository
+- **Integration:** Automatic push from CI/CD pipeline
+
+#### Amazon RDS (Relational Database Service)
+- **Purpose:** Managed MySQL database
+- **Engine:** MySQL 8.0+
+- **Features:** Automated backups, multi-AZ option
+- **Documentation:** See [docs/AWS_RDS_SETUP.md](docs/AWS_RDS_SETUP.md)
+
+#### Amazon S3 (Simple Storage Service)
+- **Purpose:** Photo storage
+- **Bucket:** brewer-fotos
+- **Region:** sa-east-1
+- **Features:** Thumbnail generation, lifecycle policies
+
+#### Amazon SES (Simple Email Service)
+- **Purpose:** Email notifications
+- **Configuration:** SMTP credentials in environment variables
+
+### AWS Configuration
+
+**Environment Variables for Production:**
+```bash
+# AWS Credentials
+export AWS_ACCESS_KEY_ID="your_access_key"
+export AWS_SECRET_ACCESS_KEY="your_secret_key"
+export AWS_REGION="sa-east-1"
+
+# S3 Configuration
+export AWS_S3_BUCKET="brewer-fotos"
+
+# RDS Configuration
+export DATABASE_URL="jdbc:mysql://your-rds-endpoint:3306/brewer"
+export DATABASE_USERNAME="admin"
+export DATABASE_PASSWORD="your_secure_password"
+```
+
+**Required IAM Permissions:**
+- EKS: Full access for deployment
+- ECR: Push/pull images
+- S3: PutObject, GetObject, DeleteObject on brewer-fotos bucket
+- RDS: Connect to database instance
+- SES: SendEmail, SendRawEmail
+
+### Deployment Scripts
+
+Located in `/scripts/`:
+- `build-and-push.sh` - Build Docker image and push to ECR
+- `deploy-to-eks.sh` - Deploy application to EKS cluster
+- `setup-rds-test-db.sh` - Initialize RDS test database
+- `start-with-s3.sh` - Start application with S3 storage enabled
 
 ## 📊 Monitoring & Observability
 
@@ -416,62 +712,194 @@ The health endpoint provides detailed information about:
 brewer/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/algaworks/brewer/
-│   │   │   ├── config/           # Spring configuration
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   ├── WebConfig.java
-│   │   │   │   └── format/       # Formatters and converters
-│   │   │   ├── controller/       # MVC Controllers
+│   │   ├── java/com/algaworks/brewer/   (114 Java source files)
+│   │   │   ├── BrewerApplication.java   # Spring Boot entry point
+│   │   │   ├── config/                  # Spring configuration (6 classes)
+│   │   │   │   ├── SecurityConfig.java  # Spring Security 6
+│   │   │   │   ├── WebConfig.java       # MVC configuration
+│   │   │   │   ├── StorageConfig.java   # Storage selection (Local/S3)
+│   │   │   │   ├── S3Config.java        # AWS SDK v2 configuration
+│   │   │   │   ├── AsyncConfig.java     # Async processing
+│   │   │   │   └── format/              # Formatters and converters
+│   │   │   ├── controller/              # MVC Controllers (9 controllers)
 │   │   │   │   ├── CervejasController.java
 │   │   │   │   ├── ClientesController.java
 │   │   │   │   ├── UsuariosController.java
+│   │   │   │   ├── VendasController.java
+│   │   │   │   ├── DashboardController.java
 │   │   │   │   └── ...
-│   │   │   ├── model/            # JPA Entities
+│   │   │   ├── model/                   # JPA Entities (20 entities)
 │   │   │   │   ├── Cerveja.java
 │   │   │   │   ├── Cliente.java
 │   │   │   │   ├── Usuario.java
+│   │   │   │   ├── Venda.java
 │   │   │   │   └── ...
-│   │   │   ├── repository/       # Data Access Layer
-│   │   │   │   ├── Cervejas.java (interface)
-│   │   │   │   ├── CervejasImpl.java (custom queries)
-│   │   │   │   ├── filter/       # Search filters
+│   │   │   ├── repository/              # Data Access Layer (27 classes)
+│   │   │   │   ├── Cervejas.java        # Repository interface
+│   │   │   │   ├── CervejasImpl.java    # Custom queries
+│   │   │   │   ├── filter/              # Search filters
 │   │   │   │   └── ...
-│   │   │   ├── service/          # Business Logic
+│   │   │   ├── service/                 # Business Logic (20 services)
 │   │   │   │   ├── CadastroCervejaService.java
 │   │   │   │   ├── CadastroClienteService.java
+│   │   │   │   ├── FotoUploadService.java
+│   │   │   │   ├── RelatorioService.java
 │   │   │   │   └── ...
-│   │   │   ├── dto/              # Data Transfer Objects
-│   │   │   ├── session/          # Session management
-│   │   │   ├── storage/          # File storage
-│   │   │   ├── thymeleaf/        # Custom Thymeleaf processors
-│   │   │   ├── validation/       # Custom validators
-│   │   │   └── BrewerApplication.java  # Main entry point
+│   │   │   ├── dto/                     # Data Transfer Objects (5 DTOs)
+│   │   │   ├── security/                # Security classes (3 classes)
+│   │   │   ├── session/                 # Shopping cart session management
+│   │   │   ├── storage/                 # File storage implementations
+│   │   │   │   ├── FotoStorage.java     # Storage interface
+│   │   │   │   ├── FotoStorageLocal.java
+│   │   │   │   └── FotoStorageS3.java
+│   │   │   ├── mail/                    # Email service
+│   │   │   ├── thymeleaf/               # Custom Thymeleaf processors (5 processors)
+│   │   │   └── validation/              # Custom validators
 │   │   └── resources/
-│   │       ├── application.properties    # Main configuration
-│   │       ├── db/migration/             # Flyway migrations
-│   │       ├── static/                   # CSS, JS, images
+│   │       ├── application.properties           # Base configuration
+│   │       ├── application-dev.properties       # Development profile
+│   │       ├── application-prod.properties      # Production profile
+│   │       ├── db/migration/                    # Flyway migrations (15 migrations)
+│   │       ├── static/                          # CSS, JS, images
 │   │       │   ├── stylesheets/
 │   │       │   ├── javascripts/
 │   │       │   └── images/
-│   │       └── templates/                # Thymeleaf templates
-│   │           ├── cerveja/
-│   │           ├── cliente/
-│   │           ├── usuario/
-│   │           └── layout/
+│   │       ├── templates/                       # Thymeleaf templates (25+ templates)
+│   │       │   ├── cerveja/
+│   │       │   ├── cliente/
+│   │       │   ├── usuario/
+│   │       │   ├── venda/
+│   │       │   └── layout/
+│   │       ├── messages.properties              # Internationalization
+│   │       └── log4j2.xml                       # Logging configuration
 │   └── test/
-│       ├── java/com/algaworks/brewer/
-│       │   └── repository/       # Integration tests
-│       │       ├── CervejasIntegrationTest.java
-│       │       ├── ClientesIntegrationTest.java
-│       │       ├── UsuariosIntegrationTest.java
-│       │       └── ...
+│       ├── java/com/algaworks/brewer/   (19 test files, 51 integration tests)
+│       │   ├── repository/              # Integration tests (6 test classes)
+│       │   │   ├── CervejasIntegrationTest.java
+│       │   │   ├── ClientesIntegrationTest.java
+│       │   │   ├── UsuariosIntegrationTest.java
+│       │   │   └── ...
+│       │   ├── service/                 # Service tests
+│       │   ├── controller/              # Controller tests
+│       │   ├── dto/                     # DTO tests
+│       │   └── storage/                 # Storage tests
 │       └── resources/
-│           └── application-test.properties  # Test configuration
-├── docker-compose.yml              # Docker orchestration
-├── docker-compose.test.yml         # Test environment
-├── pom.xml                         # Maven configuration
-└── README.md                       # This file
+│           └── application-test.properties      # Test configuration
+├── k8s/                                 # Kubernetes deployment manifests
+│   ├── base/                            # Base manifests (13 files)
+│   │   ├── deployment.yaml              # App deployment with probes
+│   │   ├── service.yaml                 # Kubernetes service
+│   │   ├── configmap.yaml               # Non-sensitive configuration
+│   │   ├── secret.yaml.template         # Secrets template
+│   │   ├── hpa.yaml                     # Horizontal Pod Autoscaler
+│   │   ├── namespace.yaml               # Namespace definition
+│   │   ├── resourcequota.yaml           # Resource limits
+│   │   ├── pdb.yaml                     # Pod Disruption Budget
+│   │   ├── ingress-nginx.yaml           # NGINX Ingress controller
+│   │   ├── ingress.yaml                 # Application ingress
+│   │   └── flyway-repair-job.yaml       # Migration repair job
+│   ├── cluster-infra/                   # Cluster infrastructure
+│   │   └── metrics-server.yaml          # Metrics collection for HPA
+│   └── README.md                        # Kubernetes documentation
+├── .github/workflows/                   # CI/CD pipelines
+│   ├── ci.yml                           # Unit tests on push
+│   ├── ci-cd.yml                        # Full CI/CD with Docker/K8s validation
+│   ├── deploy-to-eks.yml                # AWS EKS deployment
+│   ├── claude-code-review.yml           # AI code review
+│   └── claude.yml                       # Claude integration
+├── docs/                                # Documentation
+│   ├── DEPLOYMENT.md                    # EKS deployment guide
+│   └── AWS_RDS_SETUP.md                 # RDS configuration
+├── postman/                             # API testing (40+ endpoints)
+│   ├── Brewer-API.postman_collection.json
+│   ├── Development.postman_environment.example.json
+│   ├── Production.postman_environment.json
+│   └── README.md                        # API testing guide
+├── scripts/                             # Deployment and setup scripts
+│   ├── build-and-push.sh                # Docker build & push
+│   ├── deploy-to-eks.sh                 # EKS deployment automation
+│   ├── setup-rds-test-db.sh             # RDS test setup
+│   └── start-with-s3.sh                 # S3 integration startup
+├── Dockerfile                           # Multi-stage Docker build
+├── docker-compose.yml                   # Development environment
+├── docker-compose.test.yml              # Test environment
+├── pom.xml                              # Maven configuration
+├── .kube-linter.yaml                    # Kubernetes security linting
+├── .env.example                         # Environment variables template
+├── JAVA_21_INSTALLATION.md              # Java 21 installation guide
+└── README.md                            # This file
 ```
+
+## 🏗️ Architecture & Design
+
+### Layered Architecture
+
+The application follows a clean layered architecture pattern:
+
+```
+┌─────────────────────────────────────┐
+│   Presentation Layer (Controller)   │  ← HTTP requests, view rendering
+├─────────────────────────────────────┤
+│   Business Layer (Service)          │  ← Business logic, validation
+├─────────────────────────────────────┤
+│   Data Access Layer (Repository)    │  ← Database operations
+├─────────────────────────────────────┤
+│   Domain Layer (Model/Entity)       │  ← Business entities
+└─────────────────────────────────────┘
+```
+
+**Layer Responsibilities:**
+- **Controllers (9):** Request mapping, input validation, response formatting
+- **Services (20):** Business logic, transaction management, cross-cutting concerns
+- **Repositories (27):** Data access abstraction, custom queries, filtering
+- **Entities (20):** JPA entities representing business domain
+
+### Design Patterns
+
+1. **Repository Pattern** - Abstracts data access logic
+2. **Service Layer Pattern** - Encapsulates business logic
+3. **DTO Pattern** - Data transfer between layers
+4. **Dependency Injection** - Spring IoC container
+5. **Builder Pattern** - Entity construction
+6. **Strategy Pattern** - Storage implementations (Local/S3)
+7. **Filter Pattern** - Dynamic search criteria
+8. **Entity Listener** - JPA lifecycle hooks (photo URL enrichment)
+9. **Event Pattern** - Domain events for photo handling
+10. **Validation Groups** - Conditional validation (CPF vs CNPJ)
+
+### Key Architectural Features
+
+**Separation of Concerns:**
+- Clear boundaries between layers
+- DTOs for API contracts
+- Entities for persistence
+- Service interfaces for business logic
+
+**Dynamic Querying:**
+- Filter objects for flexible searching
+- Custom repository implementations
+- JPQL and native SQL support
+- Pagination with Spring Data
+
+**Security Architecture:**
+- Spring Security 6 with SecurityFilterChain
+- Form-based authentication
+- Role-based access control (RBAC)
+- Method-level security with @PreAuthorize
+- Session management (30-minute timeout)
+
+**Storage Abstraction:**
+- `FotoStorage` interface
+- `FotoStorageLocal` - Development/testing
+- `FotoStorageS3` - Production with AWS SDK v2
+- Configuration-driven selection via profiles
+
+**Database Schema:**
+- 11 core tables
+- 15 Flyway migrations
+- Foreign key constraints
+- Indexes on frequently queried columns
+- UTF-8mb4 character set (full Unicode support)
 
 ## 📚 API Documentation
 
