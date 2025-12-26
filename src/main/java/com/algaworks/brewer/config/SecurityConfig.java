@@ -75,7 +75,10 @@ public class SecurityConfig {
 			.requestMatchers("/images/**")
 			.requestMatchers("/javascripts/**")
 			.requestMatchers("/stylesheets/**")
-			.requestMatchers("/fotos/**");
+			.requestMatchers("/fotos/**")
+			// Actuator health endpoints for Kubernetes probes - bypass security completely
+			.requestMatchers("/actuator/health/**")
+			.requestMatchers("/actuator/health");
 	}
 
 	@Bean
