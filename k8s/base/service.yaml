@@ -19,7 +19,4 @@ spec:
     port: 80
     targetPort: http
     protocol: TCP
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800
+  sessionAffinity: None

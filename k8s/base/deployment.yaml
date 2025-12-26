@@ -7,7 +7,7 @@ metadata:
     app: brewer
     component: application
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -29,7 +29,8 @@ spec:
     spec:
       containers:
       - name: brewer
-        image: brewer:latest
+        # image: brewer:latest
+        image: 491292497838.dkr.ecr.sa-east-1.amazonaws.com/brewer:latest
         imagePullPolicy: Always
         ports:
         - name: http
@@ -46,11 +47,11 @@ spec:
         # Resource limits and requests
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "250m"
+            memory: "384Mi"
+            cpu: "200m"
           limits:
-            memory: "1Gi"
-            cpu: "1000m"
+            memory: "768Mi"
+            cpu: "500m"
         
         # Liveness probe - checks if app is alive
         livenessProbe:
@@ -77,9 +78,9 @@ spec:
         # Startup probe - gives app more time to start
         startupProbe:
           httpGet:
-            path: /actuator/health
+            path: /actuator/health/liveness
             port: http
-          initialDelaySeconds: 0
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 30
