@@ -20,11 +20,11 @@ k8s/
 
 Os manifestos Kubernetes passam por validações automatizadas no GitHub Actions:
 
-### 1. **Kubeval** - Validação de Sintaxe
-Valida se os manifestos seguem o schema do Kubernetes.
+### 1. **Kubeconform** - Validação de Sintaxe
+Valida se os manifestos seguem o schema do Kubernetes. Kubeconform é o sucessor mantido ativamente do kubeval (deprecated).
 
 ```bash
-kubeval --strict --ignore-missing-schemas k8s/base/*.yaml
+kubeconform -strict -summary k8s/base/*.yaml
 ```
 
 ### 2. **Kube-score** - Análise de Qualidade
@@ -62,18 +62,21 @@ kubectl apply --dry-run=client -f k8s/base/
 Instale as ferramentas:
 
 ```bash
-# Kubeval
-wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
-tar xf kubeval-linux-amd64.tar.gz
-sudo mv kubeval /usr/local/bin
+# Kubeconform (substituto do kubeval deprecated)
+VERSION="0.6.7"
+wget "https://github.com/yannh/kubeconform/releases/download/v${VERSION}/kubeconform-linux-amd64.tar.gz"
+tar xf kubeconform-linux-amd64.tar.gz
+sudo mv kubeconform /usr/local/bin
 
 # Kube-score
-wget https://github.com/zegl/kube-score/releases/download/v1.18.0/kube-score_1.18.0_linux_amd64.tar.gz
-tar xf kube-score_1.18.0_linux_amd64.tar.gz
+VERSION="1.18.0"
+wget "https://github.com/zegl/kube-score/releases/download/v${VERSION}/kube-score_${VERSION}_linux_amd64.tar.gz"
+tar xf "kube-score_${VERSION}_linux_amd64.tar.gz"
 sudo mv kube-score /usr/local/bin
 
 # Kube-linter
-wget https://github.com/stackrox/kube-linter/releases/download/v0.6.8/kube-linter-linux.tar.gz
+VERSION="0.6.8"
+wget "https://github.com/stackrox/kube-linter/releases/download/v${VERSION}/kube-linter-linux.tar.gz"
 tar xf kube-linter-linux.tar.gz
 sudo mv kube-linter /usr/local/bin
 ```
@@ -82,7 +85,7 @@ sudo mv kube-linter /usr/local/bin
 
 ```bash
 # Validar sintaxe
-kubeval --strict --ignore-missing-schemas k8s/base/*.yaml
+kubeconform -strict -summary k8s/base/*.yaml
 
 # Analisar qualidade
 kube-score score k8s/base/*.yaml
@@ -238,6 +241,6 @@ spec:
 
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [AWS EKS Best Practices](https://aws.github.io/aws-eks-best-practices/)
-- [Kubeval](https://kubeval.instrumenta.dev/)
+- [Kubeconform](https://github.com/yannh/kubeconform) - Substituto mantido do kubeval
 - [Kube-score](https://github.com/zegl/kube-score)
 - [Kube-linter](https://docs.kubelinter.io/)
