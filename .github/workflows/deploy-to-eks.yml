@@ -29,22 +29,6 @@ jobs:
     name: Build and Deploy
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: brewer_test
-          MYSQL_USER: test
-          MYSQL_PASSWORD: test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -56,23 +40,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Wait for MySQL
-      run: |
-        echo "Waiting for MySQL to be ready..."
-        for i in {1..30}; do
-          if mysqladmin ping -h 127.0.0.1 -u root -proot --silent; then
-            echo "MySQL is ready!"
-            break
-          fi
-          echo "Waiting for MySQL... ($i/30)"
-          sleep 2
-        done
-
     - name: Run tests
       env:
-        TEST_DB_URL: jdbc:mysql://localhost:3306/brewer_test?allowPublicKeyRetrieval=true&useSSL=false
-        TEST_DB_USER: test
-        TEST_DB_PASSWORD: test
+        TEST_DB_URL: ${{ secrets.TEST_DB_URL }}
+        TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
         TEST_DB_DRIVER: com.mysql.cj.jdbc.Driver
       run: mvn test -B
 
