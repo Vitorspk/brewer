@@ -6,12 +6,9 @@ metadata:
   labels:
     app: brewer
   annotations:
-    # Enable HTTPS redirect when certificate is configured
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    # Force HTTPS
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    # Certificate issuer (uncomment when cert-manager is installed)
-    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Cloudflare Proxy handles HTTPS, disable redirect to prevent loops
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
