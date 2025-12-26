@@ -71,15 +71,53 @@ jobs:
     - name: Update kube config
       run: aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
 
+    - name: Verify Prerequisites
+      run: |
+        # Check if namespace exists, create if not
+        kubectl get namespace $K8S_NAMESPACE || kubectl create namespace $K8S_NAMESPACE
+
+        # Check if secrets exist
+        if ! kubectl get secret brewer-secrets -n $K8S_NAMESPACE >/dev/null 2>&1; then
+          echo "❌ ERROR: Secret 'brewer-secrets' not found in namespace '$K8S_NAMESPACE'"
+          echo "Please create the secret first:"
+          echo "kubectl create secret generic brewer-secrets \\"
+          echo "  --from-literal=DATABASE_URL='...' \\"
+          echo "  --from-literal=DATABASE_USERNAME='...' \\"
+          echo "  --from-literal=DATABASE_PASSWORD='...' \\"
+          echo "  --namespace=$K8S_NAMESPACE"
+          exit 1
+        fi
+        echo "✅ Secret 'brewer-secrets' exists"
+
     - name: Deploy to EKS
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        # Create namespace if not exists
         kubectl apply -f k8s/base/namespace.yaml
+
+        # Apply ConfigMap (non-sensitive configs)
         kubectl apply -f k8s/base/configmap.yaml
+
+        # Note: Secrets must be pre-created manually for security
+        # kubectl create secret generic brewer-secrets --from-literal=... (see k8s/base/secret.yaml)
+
+        # Apply Service and Ingress
+        kubectl apply -f k8s/base/service.yaml
+        kubectl apply -f k8s/base/ingress-nginx.yaml
+
+        # Apply or update Deployment with new image
+        kubectl apply -f k8s/base/deployment.yaml
         kubectl set image deployment/brewer-app brewer=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n $K8S_NAMESPACE
+
+        # Wait for rollout to complete
         kubectl rollout status deployment/brewer-app -n $K8S_NAMESPACE --timeout=5m
+
+        # Apply HPA (Horizontal Pod Autoscaler) if exists
+        if [ -f k8s/base/hpa.yaml ]; then
+          kubectl apply -f k8s/base/hpa.yaml
+        fi
 
     - name: Verify deployment
       run: |
