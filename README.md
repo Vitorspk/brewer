@@ -168,11 +168,6 @@ mvn clean package -DskipTests
 java -jar target/brewer-1.0.0-SNAPSHOT.jar
 ```
 
-### Default Credentials
-After Flyway migrations run, you can login with:
-- **Username**: `admin@brewer.com`
-- **Password**: `admin` (change this in production!)
-
 ## 🧪 Testing
 
 ### Run All Tests
