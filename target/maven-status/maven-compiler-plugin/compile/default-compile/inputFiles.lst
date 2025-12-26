@@ -40,6 +40,7 @@
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/service/exception/NomeEstiloJaCadastradoException.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/validation/validator/AtributoConfirmacaoValidator.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/model/Endereco.java
+/Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/security/Permissoes.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/repository/helper/cliente/ClientesImpl.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/storage/local/FotoStorageLocal.java
 /Users/home/Documents/workspace-bitbucket/brewer/src/main/java/com/algaworks/brewer/service/StatusUsuario.java

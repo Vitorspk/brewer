@@ -55,11 +55,11 @@ Brewer.MaskCep = (function() {
 }());
 
 Brewer.MaskDate = (function() {
-	
+
 	function MaskDate() {
 		this.inputDate = $('.js-date');
 	}
-	
+
 	MaskDate.prototype.enable = function() {
 		this.inputDate.mask('00/00/0000');
 		this.inputDate.datepicker({
@@ -68,9 +68,50 @@ Brewer.MaskDate = (function() {
 			autoclose: true
 		});
 	}
-	
+
 	return MaskDate;
-	
+
+}());
+
+Brewer.MaskTime = (function() {
+
+	function MaskTime() {
+		this.inputTime = $('.js-time');
+	}
+
+	function correctTimeValue(field) {
+		var val = field.val();
+		if (val.length === 5) {
+			var parts = val.split(':');
+			var hour = parseInt(parts[0]);
+			var minute = parseInt(parts[1]);
+
+			if (hour > 23) {
+				field.val('23:' + (parts[1] || '00'));
+			}
+			if (minute > 59) {
+				field.val(parts[0] + ':59');
+			}
+		}
+	}
+
+	MaskTime.prototype.enable = function() {
+		var options = {
+			onKeyPress: function(val, e, field, options) {
+				correctTimeValue(field);
+			}
+		};
+
+		this.inputTime.mask('00:00', options);
+
+		// Validação ao sair do campo
+		this.inputTime.blur(function() {
+			correctTimeValue($(this));
+		});
+	}
+
+	return MaskTime;
+
 }());
 
 Brewer.Security = (function() {
@@ -98,17 +139,20 @@ Brewer.formatarMoeda = function(valor) {
 $(function() {
 	var maskMoney = new Brewer.MaskMoney();
 	maskMoney.enable();
-	
+
 	var maskPhoneNumber = new Brewer.MaskPhoneNumber();
 	maskPhoneNumber.enable();
-	
+
 	var maskCep = new Brewer.MaskCep();
 	maskCep.enable();
-	
+
 	var maskDate = new Brewer.MaskDate();
 	maskDate.enable();
-	
+
+	var maskTime = new Brewer.MaskTime();
+	maskTime.enable();
+
 	var security = new Brewer.Security();
 	security.enable();
-	
+
 });

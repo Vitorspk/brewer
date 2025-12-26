@@ -18,6 +18,7 @@ com/algaworks/brewer/controller/converter/CidadeConverter.class
 com/algaworks/brewer/controller/converter/BigDecimalConverter.class
 com/algaworks/brewer/security/AppUserDetailsService.class
 com/algaworks/brewer/service/exception/NomeEstiloJaCadastradoException.class
+com/algaworks/brewer/security/Permissoes.class
 com/algaworks/brewer/model/validation/group/CnpjGroup.class
 com/algaworks/brewer/config/S3Config.class
 com/algaworks/brewer/repository/helper/usuario/UsuariosImpl.class
@@ -95,6 +96,7 @@ com/algaworks/brewer/service/StatusUsuario$1.class
 com/algaworks/brewer/service/event/cerveja/CervejaListener.class
 com/algaworks/brewer/controller/ClientesController.class
 com/algaworks/brewer/model/TipoPessoa$2.class
+com/algaworks/brewer/dto/VendaOrigem.class
 com/algaworks/brewer/service/CadastroVendaService.class
 com/algaworks/brewer/service/event/cerveja/CervejaSalvaEvent.class
 com/algaworks/brewer/service/exception/CpfCnpjClienteJaCadastradoException.class
@@ -109,6 +111,7 @@ com/algaworks/brewer/model/StatusVenda.class
 com/algaworks/brewer/model/TipoPessoa$1.class
 com/algaworks/brewer/repository/VendasQueries.class
 com/algaworks/brewer/repository/helper/usuario/UsuariosQueries.class
+com/algaworks/brewer/dto/VendaMes.class
 com/algaworks/brewer/model/TipoPessoa.class
 com/algaworks/brewer/model/ItemVenda.class
 com/algaworks/brewer/dto/CervejaDTO.class

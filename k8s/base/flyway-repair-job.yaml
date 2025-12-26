@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flyway-repair
+  namespace: brewer
+  labels:
+    app: brewer
+    component: migration
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: brewer
+        component: migration
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: flyway-repair
+        image: 491292497838.dkr.ecr.sa-east-1.amazonaws.com/brewer:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          echo "=== Starting Flyway Repair ==="
+          java -cp /app/app.jar org.springframework.boot.loader.launch.JarLauncher \
+            --spring.flyway.enabled=true \
+            --spring.jpa.hibernate.ddl-auto=none \
+            org.flywaydb.commandline.Main repair
+          echo "=== Flyway Repair Completed ==="
+
+        # Environment variables from ConfigMap and Secret
+        envFrom:
+        - configMapRef:
+            name: brewer-config
+        - secretRef:
+            name: brewer-secrets
+
+        # Override to run repair
+        env:
+        - name: SPRING_FLYWAY_ENABLED
+          value: "true"
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+
+      securityContext:
+        fsGroup: 1000
