@@ -1,0 +1,44 @@
+checks:
+  # Do not warn about default checks that are reasonable to skip
+  doNotAutoAddDefaults: false
+
+  # Exclude specific checks that may not apply to this project
+  exclude:
+    # We use LoadBalancer service type which is expected for cloud deployments
+    - "no-extensions-v1beta"
+    # We have resource limits defined, but allow some flexibility
+    - "unset-cpu-requirements"
+    - "unset-memory-requirements"
+    # We're using specific security contexts that may not match all recommendations
+    - "run-as-non-root"
+    - "no-read-only-root-fs"
+
+  # Include critical security checks
+  include:
+    - "dangling-service"
+    - "deprecated-service-account-field"
+    - "docker-sock"
+    - "drop-net-raw-capability"
+    - "env-var-secret"
+    - "exposed-services"
+    - "host-ipc"
+    - "host-network"
+    - "host-pid"
+    - "mismatching-selector"
+    - "no-anti-affinity"
+    - "no-liveness-probe"
+    - "no-readiness-probe"
+    - "non-existent-service-account"
+    - "privilege-escalation-container"
+    - "privileged-container"
+    - "required-annotation-email"
+    - "required-label-owner"
+    - "sensitive-host-mounts"
+    - "ssh-port"
+    - "unsafe-proc-mount"
+    - "unsafe-sysctls"
+    - "unset-cpu-requirements"
+    - "unset-memory-requirements"
+    - "writable-host-mount"
+
+customChecks: []

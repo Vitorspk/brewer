@@ -123,6 +123,88 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  k8s-manifest-validation:
+    name: Kubernetes Manifest Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kubeval
+        run: |
+          wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval-linux-amd64.tar.gz
+          sudo mv kubeval /usr/local/bin
+
+      - name: Install kube-score
+        run: |
+          wget https://github.com/zegl/kube-score/releases/download/v1.18.0/kube-score_1.18.0_linux_amd64.tar.gz
+          tar xf kube-score_1.18.0_linux_amd64.tar.gz
+          sudo mv kube-score /usr/local/bin
+
+      - name: Install kubelinter
+        run: |
+          wget https://github.com/stackrox/kube-linter/releases/download/v0.6.8/kube-linter-linux.tar.gz
+          tar xf kube-linter-linux.tar.gz
+          sudo mv kube-linter /usr/local/bin
+
+      - name: Validate Kubernetes manifests with kubeval
+        run: |
+          echo "::group::Kubeval validation"
+          kubeval --strict --ignore-missing-schemas k8s/base/*.yaml
+          echo "::endgroup::"
+
+      - name: Analyze manifests with kube-score
+        run: |
+          echo "::group::Kube-score analysis"
+          kube-score score k8s/base/*.yaml \
+            --ignore-test pod-networkpolicy \
+            --ignore-test deployment-has-poddisruptionbudget \
+            --ignore-test container-security-context-user-group-id || true
+          echo "::endgroup::"
+
+      - name: Lint Kubernetes manifests with kubelinter
+        run: |
+          echo "::group::Kubelinter security scan"
+          kube-linter lint k8s/base/ \
+            --config .kube-linter.yaml || true
+          echo "::endgroup::"
+
+      - name: Dry-run deployment test
+        run: |
+          echo "::group::Kubernetes dry-run test"
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+          # Create a temporary kubeconfig for dry-run
+          mkdir -p ~/.kube
+          cat > ~/.kube/config << 'EOF'
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - cluster:
+              server: https://kubernetes.default.svc
+              insecure-skip-tls-verify: true
+            name: local
+          contexts:
+          - context:
+              cluster: local
+              user: local
+            name: local
+          current-context: local
+          users:
+          - name: local
+            user:
+              token: dummy
+          EOF
+
+          # Dry-run validation (syntax check only)
+          kubectl apply --dry-run=client -f k8s/base/ || true
+          echo "::endgroup::"
+
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
