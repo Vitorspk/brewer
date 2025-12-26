@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: brewer-app-pdb
+  namespace: brewer
+  labels:
+    app: brewer
+    component: application
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: brewer
+      component: application

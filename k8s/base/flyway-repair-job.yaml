@@ -21,16 +21,15 @@ spec:
         # Image will be set manually when running the job
         image: brewer:latest
         imagePullPolicy: Always
-        command: ["/bin/sh"]
+        command: ["java"]
         args:
-        - -c
-        - |
-          echo "=== Starting Flyway Repair ==="
-          java -jar /app/app.jar \
-            --spring.flyway.enabled=true \
-            --spring.flyway.repair-on-migrate=true \
-            --spring.jpa.hibernate.ddl-auto=none
-          echo "=== Flyway Repair Completed ==="
+        - "-jar"
+        - "/app/app.jar"
+        - "--spring.main.web-application-type=none"
+        - "--spring.flyway.enabled=true"
+        - "--spring.flyway.repair-on-migrate=true"
+        - "--spring.jpa.hibernate.ddl-auto=none"
+        - "--spring.boot.admin.client.enabled=false"
 
         # Environment variables from ConfigMap and Secret
         envFrom:
