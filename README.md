@@ -690,7 +690,7 @@ export SERVER_PORT=8080
 
 **🔐 SECURITY WARNING - Password Rotation Required**:
 - ⚠️ **Previous versions of this codebase contained hardcoded database passwords in git history**
-- 🔴 **ACTION REQUIRED**: If you previously used hardcoded passwords (e.g., `x5r2i6e3`), rotate them immediately
+- 🔴 **ACTION REQUIRED**: If you previously used hardcoded passwords (e.g., `xxxxx`), rotate them immediately
 - ✅ **Current version**: All passwords externalized to environment variables
 - 📋 **Best Practices**:
   - Never commit passwords or secrets to git
