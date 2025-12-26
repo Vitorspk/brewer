@@ -18,17 +18,18 @@ spec:
       restartPolicy: Never
       containers:
       - name: flyway-repair
-        image: 491292497838.dkr.ecr.sa-east-1.amazonaws.com/brewer:latest
+        # Image will be set manually when running the job
+        image: brewer:latest
         imagePullPolicy: Always
         command: ["/bin/sh"]
         args:
         - -c
         - |
           echo "=== Starting Flyway Repair ==="
-          java -cp /app/app.jar org.springframework.boot.loader.launch.JarLauncher \
+          java -jar /app/app.jar \
             --spring.flyway.enabled=true \
-            --spring.jpa.hibernate.ddl-auto=none \
-            org.flywaydb.commandline.Main repair
+            --spring.flyway.repair-on-migrate=true \
+            --spring.jpa.hibernate.ddl-auto=none
           echo "=== Flyway Repair Completed ==="
 
         # Environment variables from ConfigMap and Secret
