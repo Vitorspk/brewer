@@ -91,3 +91,4 @@ O pipeline garante:
 - ✅ Sem erros de compilação
 - ✅ Relatórios de cobertura gerados
 - ✅ Artefatos preservados para análise
+# CI/CD Test
