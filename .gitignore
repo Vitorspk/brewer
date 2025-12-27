@@ -85,3 +85,13 @@ AWS_S3_CREDENTIALS.md
 # Kubernetes Secrets - NEVER commit actual secrets
 k8s/base/secret.yaml
 k8s/*/secret.yaml
+k8s/base/secret-gcp.yaml
+k8s/*/secret-gcp.yaml
+
+# GCP Credentials - NEVER commit these files
+.brewer-gcs.properties
+*service-account*.json
+*-sa-key.json
+*gcp-credentials*.json
+.gcp-credentials
+.brewer-gcp-credentials
