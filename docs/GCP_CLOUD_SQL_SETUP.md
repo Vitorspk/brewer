@@ -74,7 +74,7 @@ gcloud services enable servicenetworking.googleapis.com
 export PROJECT_ID="vschiavo-home"
 export REGION="southamerica-east1"
 export INSTANCE_NAME="brewer-db"
-export ADMIN_PASSWORD="qopjof-biRde6-nymrib"  # MUDE ESTA SENHA!
+export ADMIN_PASSWORD="xxx"
 
 # Criar instância (pode levar 5-10 minutos)
 gcloud sql instances create ${INSTANCE_NAME} \
