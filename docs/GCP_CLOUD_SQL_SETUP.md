@@ -41,7 +41,7 @@ CLOUDSQL_TEST_DATABASE=brewer_test
 Se credenciais foram expostas:
 
 ```bash
-# 1. Conectar ao Cloud SQL e criar novo usuário
+# 1. Alterar senha do usuário admin
 gcloud sql users set-password admin \
   --instance=brewer-db \
   --password="NEW_SECURE_PASSWORD"
@@ -74,7 +74,7 @@ gcloud services enable servicenetworking.googleapis.com
 export PROJECT_ID="vschiavo-home"
 export REGION="southamerica-east1"
 export INSTANCE_NAME="brewer-db"
-export ROOT_PASSWORD="qopjof-biRde6-nymrib"  # MUDE ESTA SENHA!
+export ADMIN_PASSWORD="qopjof-biRde6-nymrib"  # MUDE ESTA SENHA!
 
 # Criar instância (pode levar 5-10 minutos)
 gcloud sql instances create ${INSTANCE_NAME} \
@@ -88,8 +88,7 @@ gcloud sql instances create ${INSTANCE_NAME} \
   --maintenance-window-day=SUN \
   --maintenance-window-hour=04 \
   --no-assign-ip \
-  --network=projects/${PROJECT_ID}/global/networks/default \
-  --root-password="${ROOT_PASSWORD}"
+  --network=projects/${PROJECT_ID}/global/networks/default
 
 # Verificar criação
 gcloud sql instances describe ${INSTANCE_NAME}
@@ -98,10 +97,10 @@ gcloud sql instances describe ${INSTANCE_NAME}
 ### 3. Criar Usuário Admin e Bancos de Dados
 
 ```bash
-# Criar usuário admin (se não criado com --root-password)
+# Criar usuário admin
 gcloud sql users create admin \
   --instance=${INSTANCE_NAME} \
-  --password="${ROOT_PASSWORD}"
+  --password="${ADMIN_PASSWORD}"
 
 # Criar banco de dados principal
 gcloud sql databases create brewer \
