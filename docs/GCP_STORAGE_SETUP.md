@@ -44,7 +44,7 @@ gcloud storage buckets describe gs://${BUCKET_NAME}
 cat > /tmp/cors.json <<'EOF'
 [
   {
-    "origin": ["http://localhost:8080", "https://seu-dominio.com"],
+    "origin": ["http://localhost:8080", "https://brewer.virosistemas.com"],
     "method": ["GET", "POST", "PUT", "DELETE"],
     "responseHeader": ["Content-Type"],
     "maxAgeSeconds": 3000
