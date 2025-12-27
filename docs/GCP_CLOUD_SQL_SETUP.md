@@ -74,7 +74,7 @@ gcloud services enable servicenetworking.googleapis.com
 export PROJECT_ID="vschiavo-home"
 export REGION="southamerica-east1"
 export INSTANCE_NAME="brewer-db"
-export ADMIN_PASSWORD="xxx"
+export ADMIN_PASSWORD="<YOUR_SECURE_PASSWORD>"
 
 # Criar instância (pode levar 5-10 minutos)
 gcloud sql instances create ${INSTANCE_NAME} \
@@ -132,6 +132,7 @@ Para acessar de forma segura localmente:
 
 ```bash
 # Baixar Cloud SQL Proxy (Linux/Mac)
+# NOTA: Verifique a versão mais recente em: https://cloud.google.com/sql/docs/mysql/sql-proxy#install
 curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.13.0/cloud-sql-proxy.linux.amd64
 chmod +x cloud-sql-proxy
 
@@ -150,7 +151,7 @@ mysql -h 127.0.0.1 -u admin -p brewer
 # .env - para desenvolvimento local via Cloud SQL Proxy
 DATABASE_URL=jdbc:mysql://127.0.0.1:3306/brewer?allowPublicKeyRetrieval=true&useSSL=false
 DATABASE_USERNAME=admin
-DATABASE_PASSWORD=qopjof-biRde6-nymrib
+DATABASE_PASSWORD=<YOUR_SECURE_PASSWORD>
 ```
 
 #### Production GKE (.env.cloudsql)
@@ -159,7 +160,7 @@ DATABASE_PASSWORD=qopjof-biRde6-nymrib
 # .env.cloudsql - para GKE com Private IP (NÃO COMMITE)
 DATABASE_URL=jdbc:mysql://10.x.x.x:3306/brewer?useSSL=true&requireSSL=false&serverTimezone=UTC
 DATABASE_USERNAME=admin
-DATABASE_PASSWORD=qopjof-biRde6-nymrib
+DATABASE_PASSWORD=<YOUR_SECURE_PASSWORD>
 ```
 
 #### Kubernetes com Cloud SQL Proxy Sidecar
@@ -188,7 +189,7 @@ spec:
 
   # Cloud SQL Proxy sidecar
   - name: cloud-sql-proxy
-    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.13.0
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2  # Usa floating tag para receber atualizações automáticas
     args:
     - "--private-ip"
     - "vschiavo-home:southamerica-east1:brewer-db"
@@ -246,12 +247,12 @@ gcloud sql instances patch ${INSTANCE_NAME} \
 # Criar secret
 gcloud secrets create brewer-db-password \
   --data-file=- <<EOF
-qopjof-biRde6-nymrib
+<YOUR_SECURE_PASSWORD>
 EOF
 
 # Conceder acesso ao service account
 gcloud secrets add-iam-policy-binding brewer-db-password \
-  --member="serviceAccount:github-actions-terraform@vschiavo-home.iam.gserviceaccount.com" \
+  --member="serviceAccount:<YOUR_SERVICE_ACCOUNT_EMAIL>" \
   --role="roles/secretmanager.secretAccessor"
 
 # Ler secret via gcloud (para teste)
