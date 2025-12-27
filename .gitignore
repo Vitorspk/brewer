@@ -90,6 +90,7 @@ k8s/*/secret-gcp.yaml
 
 # GCP Credentials - NEVER commit these files
 .brewer-gcs.properties
+.env.cloudsql
 *service-account*.json
 *-sa-key.json
 *gcp-credentials*.json
