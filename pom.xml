@@ -45,6 +45,10 @@
 		<!-- MIGRATION: Phase 14 - Migrated from AWS SDK v1 (1.12.565) to v2 (2.29.29) -->
 		<!-- Benefits: Better performance, async support, modern API design, active support -->
 		<aws-sdk.version>2.29.29</aws-sdk.version>
+
+		<!-- GCP Cloud Storage - Multi-cloud support -->
+		<!-- Added for GCP deployment compatibility -->
+		<gcp-cloud-storage.version>2.43.2</gcp-cloud-storage.version>
 	</properties>
 
 	<dependencies>
@@ -191,6 +195,15 @@
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>url-connection-client</artifactId>
 			<version>${aws-sdk.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- GCP Cloud Storage - Multi-cloud support -->
+		<!-- Added for GCP deployment compatibility -->
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-storage</artifactId>
+			<version>${gcp-cloud-storage.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
