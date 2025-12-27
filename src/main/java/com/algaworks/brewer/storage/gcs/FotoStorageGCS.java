@@ -155,7 +155,6 @@ public class FotoStorageGCS implements FotoStorage {
 		BlobId blobId = BlobId.of(bucket, novoNome);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
 				.setContentType(contentType)
-				.setContentLength((long) fileBytes.length) // For consistency with S3 implementation
 				.build();
 
 		// Upload file to GCS
@@ -176,7 +175,6 @@ public class FotoStorageGCS implements FotoStorage {
 			BlobId blobId = BlobId.of(bucket, THUMBNAIL_PREFIX + novoNome);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
 					.setContentType(contentType)
-					.setContentLength((long) array.length) // For consistency with S3 implementation
 					.build();
 
 			try (InputStream is = new ByteArrayInputStream(array)) {
