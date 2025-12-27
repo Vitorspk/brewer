@@ -1,4 +1,4 @@
-name: Deploy to EKS
+name: Deploy to GKE
 
 on:
   push:
@@ -19,9 +19,10 @@ on:
         - staging
 
 env:
-  AWS_REGION: sa-east-1
-  ECR_REPOSITORY: brewer
-  EKS_CLUSTER: eks-dev
+  GCP_REGION: southamerica-east1
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: gke-dev
+  GAR_REPOSITORY: brewer
   K8S_NAMESPACE: brewer
 
 jobs:
@@ -42,39 +43,49 @@ jobs:
 
     - name: Run tests
       env:
-        TEST_DB_URL: ${{ secrets.TEST_DB_URL_AWS }}
-        TEST_DB_USER: ${{ secrets.TEST_DB_USER_AWS }}
-        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD_AWS }}
+        TEST_DB_URL: ${{ secrets.TEST_DB_URL_GCP }}
+        TEST_DB_USER: ${{ secrets.TEST_DB_USER_GCP }}
+        TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD_GCP }}
         TEST_DB_DRIVER: com.mysql.cj.jdbc.Driver
       run: mvn test -B
 
     - name: Build with Maven
       run: mvn clean package -DskipTests -B
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.GCP_PROJECT_ID }}
 
-    - name: Build, tag, and push image to Amazon ECR
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+    - name: Build, tag, and push image to Google Artifact Registry
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        GAR_LOCATION: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        docker build -t $GAR_LOCATION/brewer:$IMAGE_TAG .
+        docker tag $GAR_LOCATION/brewer:$IMAGE_TAG $GAR_LOCATION/brewer:latest
+        docker push $GAR_LOCATION/brewer:$IMAGE_TAG
+        docker push $GAR_LOCATION/brewer:latest
+        echo "image=$GAR_LOCATION/brewer:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-    - name: Update kube config
-      run: aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
+    - name: Install gke-gcloud-auth-plugin
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+
+    - name: Get GKE credentials
+      run: |
+        gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+          --region=${{ env.GCP_REGION }} \
+          --project=${{ env.GCP_PROJECT_ID }}
 
     - name: Verify Prerequisites
       run: |
@@ -107,9 +118,9 @@ jobs:
           echo "✅ metrics-server already installed"
         fi
 
-    - name: Deploy to EKS
+    - name: Deploy to GKE
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        GAR_LOCATION: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Create namespace if not exists
@@ -132,7 +143,7 @@ jobs:
         # Apply Deployment with substituted image tag
         # This prevents drift between Git manifest and running deployment
         cat k8s/base/deployment.yaml | \
-          sed "s|image: brewer:latest|image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" | \
+          sed "s|image: brewer:latest|image: $GAR_LOCATION/brewer:$IMAGE_TAG|g" | \
           kubectl apply -f -
 
         # Wait for rollout to complete
