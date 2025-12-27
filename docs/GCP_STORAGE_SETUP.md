@@ -104,31 +104,32 @@ gcloud storage buckets update gs://${BUCKET_NAME} \
   --lifecycle-file=/tmp/lifecycle.json
 ```
 
-## 6. Criar Service Account para Aplicação
+## 6. Usar Service Account Existente
+
+Para este projeto, vamos usar a Service Account já existente do GitHub Actions:
 
 ```bash
-# Definir variáveis
-SA_NAME="brewer-storage"
-SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
-
-# Criar Service Account
-gcloud iam service-accounts create ${SA_NAME} \
-  --display-name="Brewer Storage Service Account" \
-  --description="Service account for Brewer application to access Cloud Storage" \
-  --project=${PROJECT_ID}
+# Usar Service Account existente
+SA_EMAIL="github-actions-terraform@vschiavo-home.iam.gserviceaccount.com"
 
 # Atribuir permissão ao bucket (Storage Object Admin)
 gcloud storage buckets add-iam-policy-binding gs://${BUCKET_NAME} \
   --member="serviceAccount:${SA_EMAIL}" \
   --role="roles/storage.objectAdmin"
+```
 
-# Criar chave JSON
+**📝 Nota**: A chave JSON desta Service Account já está configurada no GitHub Actions como `GCP_SA_KEY`.
+
+### Caso precise criar uma nova chave (opcional)
+
+```bash
+# Criar nova chave JSON se necessário
 gcloud iam service-accounts keys create brewer-storage-key.json \
   --iam-account=${SA_EMAIL} \
   --project=${PROJECT_ID}
 ```
 
-**⚠️ IMPORTANTE**: Salve o arquivo `brewer-storage-key.json` de forma segura. Você precisará dele na aplicação.
+**⚠️ IMPORTANTE**: A Service Account `github-actions-terraform` já tem as permissões necessárias para deployment. Você só precisa adicionar permissões de Storage.
 
 ### Permissões Alternativas (Mais Restritivas)
 
@@ -351,11 +352,10 @@ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
 
 ```bash
 # Definir variáveis
-PROJECT_ID="seu-project-id"
+PROJECT_ID="vschiavo-home"
 BUCKET_NAME="brewer-fotos"
 REGION="southamerica-east1"
-SA_NAME="brewer-storage"
-SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+SA_EMAIL="github-actions-terraform@vschiavo-home.iam.gserviceaccount.com"
 
 # 1. Criar bucket
 gcloud storage buckets create gs://${BUCKET_NAME} \
@@ -363,34 +363,26 @@ gcloud storage buckets create gs://${BUCKET_NAME} \
   --location=${REGION} \
   --uniform-bucket-level-access
 
-# 2. Criar Service Account
-gcloud iam service-accounts create ${SA_NAME} \
-  --display-name="Brewer Storage Service Account" \
-  --project=${PROJECT_ID}
-
-# 3. Dar permissões ao bucket
+# 2. Dar permissões ao bucket (usando Service Account existente)
 gcloud storage buckets add-iam-policy-binding gs://${BUCKET_NAME} \
   --member="serviceAccount:${SA_EMAIL}" \
   --role="roles/storage.objectAdmin"
 
-# 4. Criar chave JSON (SALVAR EM LOCAL SEGURO!)
-gcloud iam service-accounts keys create brewer-storage-key.json \
-  --iam-account=${SA_EMAIL} \
-  --project=${PROJECT_ID}
-
-# 5. Configurar variáveis de ambiente e iniciar aplicação
+# 3. Configurar variáveis de ambiente e iniciar aplicação
+# A chave JSON já está configurada no GitHub Actions como GCP_SA_KEY
 export GCP_PROJECT_ID=${PROJECT_ID}
 export GCP_STORAGE_BUCKET=${BUCKET_NAME}
-export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/brewer-storage-key.json
 export SPRING_PROFILES_ACTIVE=prod-gcp
 
-# 6. Testar
+# 4. Testar (se tiver a chave localmente)
 echo "test" > test.txt
 gcloud storage cp test.txt gs://${BUCKET_NAME}/test.txt
 gcloud storage ls gs://${BUCKET_NAME}/
 gcloud storage rm gs://${BUCKET_NAME}/test.txt
 rm test.txt
 ```
+
+**📝 Nota**: Estamos usando a Service Account `github-actions-terraform` que já existe e tem as credenciais configuradas no GitHub Actions.
 
 ---
 
