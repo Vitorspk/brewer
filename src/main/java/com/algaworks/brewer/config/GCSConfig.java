@@ -42,13 +42,13 @@ public class GCSConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(GCSConfig.class);
 
-	@Value("${GCP_PROJECT_ID}")
+	@Value("${gcp.project-id}")
 	private String projectId;
 
-	@Value("${GOOGLE_APPLICATION_CREDENTIALS:#{null}}")
+	@Value("${gcp.credentials.location:#{null}}")
 	private String credentialsLocation;
 
-	@Value("${GCP_CREDENTIALS_JSON:#{null}}")
+	@Value("${gcp.credentials.json:#{null}}")
 	private String credentialsJson;
 
 	private Storage storage;
@@ -84,9 +84,12 @@ public class GCSConfig {
 	 * Load Google credentials using multiple fallback strategies.
 	 *
 	 * Priority order:
-	 * 1. Inline JSON from GCP_CREDENTIALS_JSON environment variable
-	 * 2. File path from GOOGLE_APPLICATION_CREDENTIALS environment variable
-	 * 3. Application Default Credentials (for GKE Workload Identity)
+	 * 1. Inline JSON from gcp.credentials.json property
+	 * 2. Application Default Credentials (ADC) - automatically checks:
+	 *    - GOOGLE_APPLICATION_CREDENTIALS environment variable (file path)
+	 *    - gcloud config
+	 *    - GKE Workload Identity
+	 *    - Compute Engine metadata server
 	 *
 	 * @return GoogleCredentials instance
 	 * @throws IOException if credentials cannot be loaded
@@ -94,20 +97,15 @@ public class GCSConfig {
 	private GoogleCredentials loadCredentials() throws IOException {
 		// Strategy 1: Inline JSON credentials (preferred for containers)
 		if (credentialsJson != null && !credentialsJson.trim().isEmpty()) {
-			logger.info("Loading GCP credentials from inline JSON (GCP_CREDENTIALS_JSON)");
+			logger.info("Loading GCP credentials from inline JSON (gcp.credentials.json)");
 			ByteArrayInputStream credStream = new ByteArrayInputStream(
 					credentialsJson.getBytes(StandardCharsets.UTF_8));
 			return ServiceAccountCredentials.fromStream(credStream);
 		}
 
-		// Strategy 2: File path credentials (preferred for local development)
-		if (credentialsLocation != null && !credentialsLocation.trim().isEmpty()) {
-			logger.info("Loading GCP credentials from file: {}", credentialsLocation);
-			// GOOGLE_APPLICATION_CREDENTIALS is automatically detected by SDK
-			return GoogleCredentials.getApplicationDefault();
-		}
-
-		// Strategy 3: Application Default Credentials (GKE Workload Identity)
+		// Strategy 2: Application Default Credentials (ADC)
+		// This automatically checks GOOGLE_APPLICATION_CREDENTIALS env var,
+		// then gcloud config, then GKE Workload Identity, etc.
 		logger.info("Loading GCP credentials using Application Default Credentials (ADC)");
 		return GoogleCredentials.getApplicationDefault();
 	}
@@ -117,16 +115,24 @@ public class GCSConfig {
 	 *
 	 * This method is called by Spring when the bean is destroyed.
 	 * Mirrors S3Config cleanup pattern for consistency.
+	 *
+	 * NOTE: The Storage interface in google-cloud-storage doesn't directly implement
+	 * Closeable, but the underlying implementation (StorageImpl) does have cleanup logic.
+	 * We attempt to call close() if available via reflection for forward compatibility.
 	 */
 	@PreDestroy
 	public void cleanup() {
 		if (storage != null) {
 			try {
 				logger.info("Closing GCP Storage client and releasing resources");
-				// GCP Storage client implements Closeable (since v2.0.0)
-				// Note: Close method may not exist in older versions
-				// Current version (2.43.2) properly implements resource cleanup
-				storage.close();
+
+				// Attempt to close if the implementation supports it
+				if (storage instanceof AutoCloseable) {
+					((AutoCloseable) storage).close();
+					logger.info("GCP Storage client closed successfully");
+				} else {
+					logger.debug("GCP Storage client doesn't implement AutoCloseable, skipping explicit close");
+				}
 			} catch (Exception e) {
 				logger.error("Error closing GCP Storage client", e);
 			}

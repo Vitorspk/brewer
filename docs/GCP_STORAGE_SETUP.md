@@ -26,16 +26,14 @@ gcloud storage buckets create gs://${BUCKET_NAME} \
 
 **Nota**: `uniform-bucket-level-access` é equivalente ao "Block Public Access" da AWS e é recomendado para segurança.
 
-## 2. Configurar Permissões do Bucket
+## 2. Verificar Configuração do Bucket
 
 ```bash
-# Garantir que o bucket não seja público por padrão
-gcloud storage buckets update gs://${BUCKET_NAME} \
-  --no-public-access-prevention
-
-# Verificar configuração
+# Verificar configuração (bucket já está seguro com uniform-bucket-level-access)
 gcloud storage buckets describe gs://${BUCKET_NAME}
 ```
+
+**Nota**: Com `uniform-bucket-level-access` habilitado, o bucket já está configurado de forma segura. Não é necessário nem recomendado usar `--no-public-access-prevention`, pois isso é incompatível com buckets de acesso uniforme.
 
 ## 3. Configurar CORS (se necessário para upload direto do browser)
 

@@ -116,15 +116,14 @@ public class FotoStorageGCS implements FotoStorage {
 	@Override
 	public void excluir(String foto) {
 		try {
-			// Delete main photo
+			// Delete main photo and thumbnail in a single batch API call for efficiency
 			BlobId mainBlobId = BlobId.of(bucket, foto);
-			boolean mainDeleted = storage.delete(mainBlobId);
-
-			// Delete thumbnail
 			BlobId thumbBlobId = BlobId.of(bucket, THUMBNAIL_PREFIX + foto);
-			boolean thumbDeleted = storage.delete(thumbBlobId);
 
-			logger.debug("Deleted foto '{}': main={}, thumbnail={}", foto, mainDeleted, thumbDeleted);
+			// Batch delete reduces latency and number of API calls
+			storage.delete(mainBlobId, thumbBlobId);
+
+			logger.debug("Deleted foto '{}' and its thumbnail", foto);
 
 		} catch (StorageException e) {
 			logger.error("GCS error excluindo foto '{}': {} (Code: {})",
@@ -140,26 +139,23 @@ public class FotoStorageGCS implements FotoStorage {
 			return null;
 		}
 
-		// Generate public URL for the blob
-		// Note: This returns the media link, which requires proper IAM permissions
-		// For truly public access, use signed URLs or make bucket public
-		BlobId blobId = BlobId.of(bucket, foto);
-		Blob blob = storage.get(blobId);
-
-		if (blob == null || !blob.exists()) {
-			logger.warn("Blob '{}' não encontrado ao gerar URL", foto);
-			return null;
-		}
-
-		// Return media link (requires authentication)
-		// Alternative: Use blob.signUrl() for temporary signed URLs
-		return blob.getMediaLink();
+		// Construct URL without checking existence (consistent with S3 implementation)
+		// Media link format: https://storage.googleapis.com/storage/v1/b/BUCKET/o/OBJECT?alt=media
+		// Public URL format (simpler): https://storage.googleapis.com/BUCKET/OBJECT
+		//
+		// NOTE: With uniform bucket-level access, this URL requires authentication.
+		// For public access, either:
+		// 1. Use signed URLs: blob.signUrl(duration, timeUnit)
+		// 2. Grant allUsers:objectViewer IAM permission (not recommended for private data)
+		// 3. Use Cloud CDN with signed cookies
+		return String.format("https://storage.googleapis.com/%s/%s", bucket, foto);
 	}
 
 	private void enviarFoto(String novoNome, byte[] fileBytes, String contentType) throws IOException {
 		BlobId blobId = BlobId.of(bucket, novoNome);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
 				.setContentType(contentType)
+				.setContentLength((long) fileBytes.length) // For consistency with S3 implementation
 				.build();
 
 		// Upload file to GCS
@@ -180,6 +176,7 @@ public class FotoStorageGCS implements FotoStorage {
 			BlobId blobId = BlobId.of(bucket, THUMBNAIL_PREFIX + novoNome);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
 					.setContentType(contentType)
+					.setContentLength((long) array.length) // For consistency with S3 implementation
 					.build();
 
 			try (InputStream is = new ByteArrayInputStream(array)) {
